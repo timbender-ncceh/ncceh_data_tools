@@ -2,7 +2,8 @@
 #####.........README...........#####
 ####################################
 
-See [hold for rmd readme url]
+# Latest readme at: 
+#https://raw.githack.com/timbender-ncceh/ncceh_data_tools/main/README_NCCEH_data_tools.html?token=GHSAT0AAAAAABUWU2BLTOHA3RJN3WDERZIAYUHU2JA
 
 ####################################
 #####......../README...........#####
@@ -10,7 +11,7 @@ See [hold for rmd readme url]
 
 rm(list=ls());cat("\f")
 # Libraries----
-load.libs <- c("dplyr","censusxy","tidycensus","tigris","readxl","readr","rstudioapi")
+load.libs <- c("dplyr","censusxy","tidycensus","tigris","readxl","readr","rstudioapi","data.table")
 
 # check if libraries/packages are installed
 for(l in load.libs){
@@ -69,3 +70,5 @@ if(file.exists("batch_addresses_in.xlsx")){
 }else{
   print(paste("Skipping Batch Geocoding Process: No file named 'batch_addresses_in.xlsx' in ", getwd()))
 }
+
+quit()
