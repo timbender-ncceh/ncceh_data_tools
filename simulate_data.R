@@ -57,12 +57,14 @@ input_files_dir  <- "C:/Users/TimBender/Documents/tableau/DHHS_vaccination_linka
 output_files_dir <- "C:/Users/TimBender/Documents/R/ncceh/projects/codi"
 
 # identify all pii column names: 
-pii.cols             <- c("SSN")
-lastname.cols        <- c("UserLastName", "LastName")
-firstmiddlename.cols <- c("UserFirstName", "MiddleName", "FirstName")
-phone.cols           <- c("UserPhone")
-email.cols           <- c("UserEmail")
-dob.cols             <- c("DOB")
+pii.cols             <- c("SSN","UserLastName", "LastName",
+                          "UserFirstName", "MiddleName", "FirstName",
+                          "UserPhone", "UserEmail", "DOB")
+lastname.cols        <- c("")
+firstmiddlename.cols <- c("")
+phone.cols           <- c("")
+email.cols           <- c("")
+dob.cols             <- c("")
 
 # Set input file directory location----
 setwd(input_files_dir)
@@ -193,3 +195,6 @@ zip(zipfile = "simulated_RandObs.zip",
 # remove generated zip files
 file.remove(list.files(pattern = "^RandRows.*\\.csv$"))
 file.remove(list.files(pattern = "^RandObs.*\\.csv$"))
+
+rm(new.files, new.files2, i, input_files_dir, output_files_dir)
+gc()
