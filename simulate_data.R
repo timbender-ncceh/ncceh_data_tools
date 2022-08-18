@@ -22,6 +22,8 @@
 
 load.libs <- c("data.table",
                "dplyr",
+               "lubridate",
+               "lexicon",    # common names database
                "readr",      # data read/write 
                "zip",        # compress and write data to .zip files
                "rstudioapi") # get directory info
@@ -49,16 +51,18 @@ for(l in load.libs){
 
 rm(l, load.libs, my.pkgs); cat('\f'); gc()
 
-
 # Vars----
 simulated_sample_size <- 100  # set desired number of rows and/or observations to sample from each file
 input_files_dir  <- "C:/Users/TimBender/Documents/tableau/DHHS_vaccination_linkage/data"
 output_files_dir <- "C:/Users/TimBender/Documents/R/ncceh/projects/codi"
 
-
 # identify all pii column names: 
-pii.cols <- c("UserFirstName", "UserLastName", "UserPhone", "UserEmail", 
-              "DOB", "NameSuffix", "MiddleName", "FirstName", "LastName", "SSN")
+pii.cols             <- c("SSN")
+lastname.cols        <- c("UserLastName", "LastName")
+firstmiddlename.cols <- c("UserFirstName", "MiddleName", "FirstName")
+phone.cols           <- c("UserPhone")
+email.cols           <- c("UserEmail")
+dob.cols             <- c("DOB")
 
 # Set input file directory location----
 setwd(input_files_dir)
@@ -69,10 +73,34 @@ new.files <- list()
 n_rows <- simulated_sample_size
 for(i1 in temp.files){
   try(temp.file <- read_csv(i1))
-  # hash pii
+  
   for(i3 in 1:ncol(temp.file)){
+    # hash pii
     if(names(temp.file[,i3]) %in% pii.cols){
       try(temp.file[,i3] <- openssl::sha256(x = as.character(unlist(as.vector(temp.file[,i3]))), key = "ncceh"))
+    }
+    # place dummy lastnames
+    if(names(temp.file[,i3]) %in% lastname.cols){
+      #stop("ERROR!!!!!!!!!!!!!!!")
+      try(temp.file[,i3] <- sample(x = lexicon::freq_last_names$Surname, size = nrow(temp.file), replace = T, 
+                               prob = lexicon::freq_last_names$prop))
+    }
+    # place dummy firstnames
+    if(names(temp.file[,i3]) %in% firstmiddlename.cols){
+      try(temp.file[,i3] <- sample(x = lexicon::freq_first_names$Name, size = nrow(temp.file), replace = T, 
+                                   prob = lexicon::freq_first_names$prop))
+    }
+    # format phone number
+    if(names(temp.file[,i3]) %in% phone.cols){
+      try(temp.file[!unname(unlist(is.na(unlist(temp.file[,i3])))),i3] <- 5555555555)
+    }
+    #format email address
+    if(names(temp.file[,i3]) %in% email.cols){
+      try(temp.file[!unname(unlist(is.na(unlist(temp.file[,i3])))),i3] <- "fakename@fakeemail.com")
+    }
+    #format DOB
+    if(names(temp.file[,i3]) %in% dob.cols){
+      try(temp.file[!unname(unlist(is.na(unlist(temp.file[,i3])))),i3] <- as_date(0))
     }
   }
   temp.df   <- NULL
@@ -95,18 +123,43 @@ temp.files2 <- list.files(pattern = "csv$")
 new.files2 <- list()
 n_rows <- simulated_sample_size
 for(i1 in temp.files2){
-  # hash pii
   try(temp.file2 <- read_csv(i1))
   for(i3 in 1:ncol(temp.file2)){
+    # hash pii
     if(names(temp.file2[,i3]) %in% pii.cols){
       try(temp.file2[,i3] <- openssl::sha256(x = as.character(unlist(as.vector(temp.file2[,i3]))), key = "ncceh"))
+    }
+    # place dummy lastnames
+    if(names(temp.file2[,i3]) %in% lastname.cols){
+      #stop("ERROR!!!!!!!!!!!!!!!")
+      try(temp.file2[,i3] <- sample(x = lexicon::freq_last_names$Surname, size = nrow(temp.file2), replace = T, 
+                                   prob = lexicon::freq_last_names$prop))
+    }
+    # place dummy firstnames
+    if(names(temp.file2[,i3]) %in% firstmiddlename.cols){
+      try(temp.file2[,i3] <- sample(x = lexicon::freq_first_names$Name, size = nrow(temp.file2), replace = T, 
+                                   prob = lexicon::freq_first_names$prop))
+    }
+    # format phone number
+    if(names(temp.file2[,i3]) %in% phone.cols){
+      try(temp.file2[!unname(unlist(is.na(unlist(temp.file2[,i3])))),i3] <- 5555555555)
+    }
+    #format email address
+    if(names(temp.file2[,i3]) %in% email.cols){
+      try(temp.file2[!unname(unlist(is.na(unlist(temp.file2[,i3])))),i3] <- "fakename@fakeemail.com")
+    }
+    #format DOB
+    if(names(temp.file2[,i3]) %in% dob.cols){
+      try(temp.file2[!unname(unlist(is.na(unlist(temp.file2[,i3])))),i3] <- as_date(0))
     }
   }
   try(temp.df2   <- temp.file2[sample(1:nrow(temp.file2), size = min(c(n_rows, nrow(temp.file2))), replace = F),])
   try(new.files2[[i1]] <-  temp.df2)
   rm(temp.file2)
 }
-rm(list=ls()[!ls() %in% c("new.files", "new.files2")])
+rm(list=ls()[!ls() %in% c("new.files", "new.files2", "output_files_dir", 
+                          "input_files_dir")])
+
 
 # write both datas to new files----
 # set dir to desired output location
