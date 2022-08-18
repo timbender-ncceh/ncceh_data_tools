@@ -51,8 +51,10 @@ rm(l, load.libs, my.pkgs); cat('\f'); gc()
 
 
 # Vars----
+simulated_sample_size <- 100  # set desired number of rows and/or observations to sample from each file
 input_files_dir  <- "C:/Users/TimBender/Documents/tableau/DHHS_vaccination_linkage/data"
 output_files_dir <- "C:/Users/TimBender/Documents/R/ncceh/projects/codi"
+
 
 # identify all pii column names: 
 pii.cols <- c("UserFirstName", "UserLastName", "UserPhone", "UserEmail", 
@@ -64,7 +66,7 @@ setwd(input_files_dir)
 # generate sample data by randomly selecting attributes from each column----
 temp.files <- list.files(pattern = "csv$") 
 new.files <- list()
-n_rows <- 100
+n_rows <- simulated_sample_size
 for(i1 in temp.files){
   try(temp.file <- read_csv(i1))
   # hash pii
@@ -91,7 +93,7 @@ for(i1 in temp.files){
 # generate sample data by randomly selecting rows from sample data----
 temp.files2 <- list.files(pattern = "csv$") 
 new.files2 <- list()
-n_rows <- 100
+n_rows <- simulated_sample_size
 for(i1 in temp.files2){
   # hash pii
   try(temp.file2 <- read_csv(i1))
