@@ -49,7 +49,7 @@ for(l in load.libs){
   print(paste(l,"loaded"))
 }
 
-rm(l, load.libs, my.pkgs); cat('\f'); gc()
+rm(l, load.libs, my.pkgs, list=ls()); cat('\f'); gc()
 
 # Vars----
 simulated_sample_size <- 100  # set desired number of rows and/or observations to sample from each file
@@ -60,6 +60,7 @@ output_files_dir <- "C:/Users/TimBender/Documents/R/ncceh/projects/codi"
 pii.cols             <- c("SSN","UserLastName", "LastName",
                           "UserFirstName", "MiddleName", "FirstName",
                           "UserPhone", "UserEmail", "DOB")
+pii.cols <- ""
 lastname.cols        <- c("")
 firstmiddlename.cols <- c("")
 phone.cols           <- c("")
@@ -159,6 +160,31 @@ for(i1 in temp.files2){
   try(new.files2[[i1]] <-  temp.df2)
   rm(temp.file2)
 }
+
+# temp----
+# check that simulated data isn't real data
+
+getwd()
+rc <- read_csv("Client.csv")
+
+sc <- new.files[["Client.csv"]]
+
+
+
+pii_str <- function(pid,fn,mn,ln,ssn,dob){
+  return(paste(pid,fn,mn,ln,ssn,dob,sep=" "))
+}
+
+pii_str(sc$PersonalID,sc$FirstName, sc$MiddleName, sc$LastName, 
+        sc$SSN,sc$DOB) %in%
+pii_str(rc$PersonalID,rc$FirstName, rc$MiddleName, rc$LastName, 
+        rc$SSN,sc$DOB)
+
+# /temp----
+
+
+
+
 rm(list=ls()[!ls() %in% c("new.files", "new.files2", "output_files_dir", 
                           "input_files_dir")])
 
@@ -198,3 +224,7 @@ file.remove(list.files(pattern = "^RandObs.*\\.csv$"))
 
 rm(new.files, new.files2, i, input_files_dir, output_files_dir)
 gc()
+
+
+
+
