@@ -58,17 +58,14 @@ rm(list=ls());cat('\f');gc()
 # Variables----
 search.dir      <- "C:/Users/TimBender/North Carolina Coalition to End Homelessness/PM Data Center - Documents/Reporting"
 search.filename <- "Client.csv"
-pii.colnames    <- c("FirstName", "MiddleName", "LastName", "NameSuffix", 
+pii.colnames    <- c("FirstName", "MiddleName", 
+                     "LastName", "NameSuffix", 
                      "SSN", "DOB")
 
-#search.dir <- "C:/Users/TimBender/Documents"
-
 # Logic----
-
 # convert filename to regex
 search.filename2 <- paste("^", search.filename, "$", sep = "", collapse = "") %>%
   gsub(pattern = "\\.", replacement = "\\\\\\.")
-
 
 # find all instances of file
 all.files <- list.files(path = search.dir, 
@@ -76,20 +73,13 @@ all.files <- list.files(path = search.dir,
                              recursive = T,
                              full.names = F, 
                              include.dirs = T)
-
 all.files <- paste(search.dir, all.files, sep = "/") %>% gsub(pattern = "\\/{2,}", "/", .)
 
-
-
 # loop through each filename
-out.ssn.nchar <- NULL
 
 for(i in all.files){
   # read file
   temp <- read_csv(i)
-  
-  try(out.ssn.nchar <- c(out.ssn.nchar, 
-                     mean(nchar(sample(temp$SSN,100, replace = F)),na.rm = T)))
   
   # loop through pii columns
   for(ic in pii.colnames){
@@ -97,20 +87,18 @@ for(i in all.files){
     if(ic %in% colnames(temp)){
       temp[,ic] <- NA
     }
-    
   }
   
-  # save as Client.csv
+  # save as Client.csv to overwrite data
   write_csv(x      = temp,
             file   = i,
             append = F)
   
+  
+  # delete file(s)
+  # <<< not yet added >>> ----
+  
   # cleanup
   rm(temp)
   
-  
 }
-
-
-print(out.ssn.nchar)
-
