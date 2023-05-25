@@ -3,14 +3,14 @@
 
 # THIS SCRIPT DELETES FILES PERMANENTLY. THERE IS ALWAYS A NON-ZERO RISK THAT
 # IMPORTANT FILES MAY BE DELETED INADVERTENTLY WHEN A SCRIPT IS WRITTEN FOR THIS
-# PURPOSE. 
+# PURPOSE.
 
 # DO NOT ASSUME THIS FILE HAS BEEN TESTED OR IS SAFE, OR DOES WHAT YOU THINK
 # IT'S SUPPOSED TO DO. EVEN IF IT USED TO WORK, THINGS CHANGE AND CODE BREAKS.
 # CODE THAT DELETES FILES IS VERY DANGEROUS SO PROCEED WITH CAUTION.  THIS IS
 # BEST PRACTICES STUFF.
 
-# DO NOT RUN THIS SCRIPT IF YOU DO NOT UNDERSTAND WHAT IT DOES. 
+# DO NOT RUN THIS SCRIPT IF YOU DO NOT UNDERSTAND WHAT IT DOES.
 
 # ONE LINE OF CODE IS ALL IT TAKES TO DELETE EVERY FILE FROM YOUR HARD DRIVE
 # AND/OR NETWORK.  THAT LINE OF CODE IS USED IN THIS SCRIPT, BUT MODIFIED
@@ -59,41 +59,51 @@
 library(dplyr)
 library(readr)
 
-rm(list=ls());cat('\f');gc()
+rm(list = ls())
+cat('\f')
+gc()
 
 # Functions----
 
 # Variables----
-search.dir      <- "C:/Users/TimBender/North Carolina Coalition to End Homelessness/PM Data Center - Documents/Reporting"
+search.dir      <-
+  "C:/Users/TimBender/North Carolina Coalition to End Homelessness/PM Data Center - Documents/Reporting"
 search.filename <- "Client.csv"
-pii.colnames    <- c("FirstName", "MiddleName", 
-                     "LastName", "NameSuffix", 
-                     "SSN", "DOB")
+pii.colnames    <- c("FirstName",
+                     "MiddleName",
+                     "LastName",
+                     "NameSuffix",
+                     "SSN",
+                     "DOB")
 
 # Logic----
 # convert filename to regex
-search.filename2 <- paste("^", search.filename, "$", sep = "", collapse = "") %>%
+search.filename2 <-  paste("^", search.filename, "$", sep = "", collapse = "") %>%
   gsub(pattern = "\\.", replacement = "\\\\\\.")
 
 # find all instances of file
-all.files <- list.files(path = search.dir, 
-                             pattern = search.filename2,
-                             recursive = T,
-                             full.names = F, 
-                             include.dirs = T)
-all.files <- paste(search.dir, all.files, sep = "/") %>% gsub(pattern = "\\/{2,}", "/", .)
+all.files <- list.files(
+  path = search.dir,
+  pattern = search.filename2,
+  recursive = T,
+  full.names = F,
+  include.dirs = T
+)
+
+all.files <-  paste(search.dir, all.files, sep = "/") %>%
+  gsub(pattern = "\\/{2,}", "/", .)
 
 # loop through each filename
 
-for(i in all.files){
+for (i in all.files) {
   # read file
   temp <- read_csv(i)
   
   # loop through pii columns
-  for(ic in pii.colnames){
-    # overwrite pii data with NA 
-    if(ic %in% colnames(temp)){
-      temp[,ic] <- NA
+  for (ic in pii.colnames) {
+    # overwrite pii data with NA
+    if (ic %in% colnames(temp)) {
+      temp[, ic] <- NA
     }
   }
   
@@ -108,5 +118,4 @@ for(i in all.files){
   
   # cleanup
   rm(temp)
-  
 }
