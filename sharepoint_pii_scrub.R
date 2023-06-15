@@ -68,6 +68,9 @@ gc()
 # Variables----
 search.dir      <-
   "C:/Users/TimBender/North Carolina Coalition to End Homelessness/PM Data Center - Documents/Reporting"
+
+search.dir <- "C:/Users/TimBender/Documents/R"
+
 search.filename <- "Client.csv"
 pii.colnames    <- c("FirstName",
                      "MiddleName",
@@ -119,3 +122,4 @@ for (i in all.files) {
   # cleanup
   rm(temp)
 }
+
