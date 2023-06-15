@@ -63,6 +63,9 @@ rm(list = ls())
 cat('\f')
 gc()
 
+# To Do----
+# 1) Remove .7z files and .zip files from download folder
+
 # Functions----
 
 # Variables----
