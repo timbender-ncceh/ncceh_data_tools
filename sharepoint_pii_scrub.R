@@ -68,61 +68,64 @@ gc()
 
 # Functions----
 
+search.dirs <- c("C:/Users/TimBender/North Carolina Coalition to End Homelessness/PM Data Center - Documents/Reporting", 
+                 "C:/Users/TimBender/Documents/R")
+
 # Variables----
-search.dir      <-
-  "C:/Users/TimBender/North Carolina Coalition to End Homelessness/PM Data Center - Documents/Reporting"
 
-search.dir <- "C:/Users/TimBender/Documents/R"
-
-search.filename <- "Client.csv"
-pii.colnames    <- c("FirstName",
-                     "MiddleName",
-                     "LastName",
-                     "NameSuffix",
-                     "SSN",
-                     "DOB")
-
-# Logic----
-# convert filename to regex
-search.filename2 <-  paste("^", search.filename, "$", sep = "", collapse = "") %>%
-  gsub(pattern = "\\.", replacement = "\\\\\\.")
-
-# find all instances of file
-all.files <- list.files(
-  path = search.dir,
-  pattern = search.filename2,
-  recursive = T,
-  full.names = F,
-  include.dirs = T
-)
-
-all.files <-  paste(search.dir, all.files, sep = "/") %>%
-  gsub(pattern = "\\/{2,}", "/", .)
-
-# loop through each filename
-
-for (i in all.files) {
-  # read file
-  temp <- read_csv(i)
+for(search.dir in search.dirs){
+  search.filename <- "Client.csv"
+  pii.colnames    <- c("FirstName",
+                       "MiddleName",
+                       "LastName",
+                       "NameSuffix",
+                       "SSN",
+                       "DOB")
   
-  # loop through pii columns
-  for (ic in pii.colnames) {
-    # overwrite pii data with NA
-    if (ic %in% colnames(temp)) {
-      temp[, ic] <- NA
+  # Logic----
+  # convert filename to regex
+  search.filename2 <-  paste("^", search.filename, "$", sep = "", collapse = "") %>%
+    gsub(pattern = "\\.", replacement = "\\\\\\.")
+  
+  # find all instances of file
+  all.files <- list.files(
+    path = search.dir,
+    pattern = search.filename2,
+    recursive = T,
+    full.names = F,
+    include.dirs = T
+  )
+  
+  all.files <-  paste(search.dir, all.files, sep = "/") %>%
+    gsub(pattern = "\\/{2,}", "/", .)
+  
+  # loop through each filename
+  
+  for (i in all.files) {
+    # read file
+    temp <- read_csv(i)
+    
+    # loop through pii columns
+    for (ic in pii.colnames) {
+      # overwrite pii data with NA
+      if (ic %in% colnames(temp)) {
+        temp[, ic] <- NA
+      }
     }
+    
+    # save as Client.csv to overwrite data
+    write_csv(x      = temp,
+              file   = i,
+              append = F)
+    
+    
+    # delete file(s)
+    # <<< not yet added >>> ----
+    
+    # cleanup
+    rm(temp)
   }
-  
-  # save as Client.csv to overwrite data
-  write_csv(x      = temp,
-            file   = i,
-            append = F)
-  
-  
-  # delete file(s)
-  # <<< not yet added >>> ----
-  
-  # cleanup
-  rm(temp)
 }
+
+
 
