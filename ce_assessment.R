@@ -8,16 +8,16 @@ gc()
 
 
 # WEIGHTS----
-hhh   <- 1
-risks <- 2
-hw    <- 1
-fu    <- 3
+hhh   <- 3*2 #1  # housing and homeless history
+risks <- 2/2    # risk factors
+hw    <- 3*2 #1  # health wellness
+fu    <- 1/4 #3  # family unit
 
 # DATA IMPORT----
 
 #https://ncceh.sharepoint.com/:x:/s/boscoccoordination/EbaXcHJZpX1Dirf1Ql7u_9YB5FTYsxfbI5uEmPHm2Z8zjg?e=e0ORVG
 
-ce <- read_tsv("Client ID	Household ID	Race	Ethnicty	Gender	Entry Date	Exit Date	Region	Provider	Provider Updating	How long has it been since you lived in your own place?	How many months have you been without a home, such as living outside or in a shelter?	Where did you sleep last night?	Where are you going to sleep tonight?	Are you currently experiencing or feel you are at risk of experiencing violence?	Did you leave your previous or current living situation because you felt unsafe?	Have you ever experienced violence with someone close to you?	Have you experienced violence since becoming homeless?	Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?	Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?	Is the lack of housing making it hard to get to a doctorâ€™s office or take prescribed medications?	Covered by Health Insurance	What is the size of your household? (including you)	Is anyone under 5 years old?	Is anyone 55 years or older?	Is anyone in the household pregnant?	How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)	How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)	Note
+ce <- read_tsv("Client ID	Household ID	Race	Ethnicty	Gender	Entry Date	Exit Date	Region	Provider	Provider Updating	How long has it been since you lived in your own place?	How many months have you been without a home, such as living outside or in a shelter?	Where did you sleep last night?	Where are you going to sleep tonight?	Are you currently experiencing or feel you are at risk of experiencing violence?	Did you leave your previous or current living situation because you felt unsafe?	Have you ever experienced violence with someone close to you?	Have you experienced violence since becoming homeless?	Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?	Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?	Is the lack of housing making it hard to get to a doctor's office or take prescribed medications?	Covered by Health Insurance	What is the size of your household? (including you)	Is anyone under 5 years old?	Is anyone 55 years or older?	Is anyone in the household pregnant?	How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)	How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)	Note
 136715		White	Non-Hispanic	Male	6/20/2023	7/1/2023	R05	Union County Community Shelter - Union County - Emergency Adult Shelter - ES - State ESG	Union County Community Shelter - Union County - Emergency Adult Shelter - ES - State ESG	Less than 3 months	Less than 3 months	Sheltered (ES, TH)	Sheltered (ES, TH)	No	No	Yes	No	No	No	No	No (HUD)	1-2 people	No	No	No	1 or more	None	
 285031		Black	Non-Hispanic	Male	6/10/2023	7/1/2023	R05	Rowan Helping Ministries - Rowan County -  Emergency Shelter - ES - Private	Rowan Helping Ministries - Rowan County -  Emergency Shelter - ES - Private	36 months (3 years) or more	36 months (3 years) or more	Sheltered (ES, TH)	Sheltered (ES, TH)	Yes	Yes	No	Yes	Yes	Yes, 1	Yes	Yes (HUD)	1-2 people	No	No	No	None	None	
 297854		White	Non-Hispanic	Male	6/23/2023		R05	Rowan Helping Ministries - Rowan County -  Emergency Shelter - ES - Private	Rowan Helping Ministries - Rowan County -  Emergency Shelter - ES - Private	36 months (3 years) or more	36 months (3 years) or more	Sheltered (ES, TH)	Sheltered (ES, TH)	No	No	No	No	No	No	No	No (HUD)	1-2 people	No	No	No	None	None	
@@ -253,6 +253,9 @@ What is the size of your household? (including you)	order_vuln
 Is anyone under 5 years old?	order_vuln
 No	0
 Yes	1
+Is anyone 55 years or older?	order_vuln
+No	0
+Yes	1
 Is anyone in the household pregnant?	order_vuln
 No	0
 Yes	1
@@ -304,7 +307,7 @@ ce4 <- as.data.table(ce3) %>%
 
 ce4$response[is.na(ce4$response)] <- "na"
 
-ce5 <- left_join(ce4, ov, na_matches = "na")
+ce5 <- left_join(ce4, ov)
 
 
 # normalize----
@@ -316,6 +319,56 @@ ov_n <- ov %>%
   mutate(norm_vuln = order_vuln / max(order_vuln))
 
 
-ce6 <- left_join(ce5, ov_n, na_matches = "na")
+ce6 <- left_join(ce5, ov_n)
+
+ce6[is.na(ce6$norm_vuln),]$question %>% unique()
 
 ce6$norm_vuln %>% table(., useNA = "always")
+
+ce7 <- left_join(ce6, 
+          df.colatts, 
+          by = c("question" = "long_name"))
+
+
+ce8 <- ce7 %>%
+  group_by(`Client ID`, group) %>%
+  summarise(t_norm = sum(norm_vuln)) %>%
+  .[!is.na(.$group),] %>%
+   left_join(., 
+             data.frame(group = c("Family Unit", 
+                                  "Health and Wellness", 
+                                  "Housing and Homeless History", 
+                                  "Risks"), 
+                        weight = c(fu, hw, hhh, risks))) %>%
+  ungroup() 
+
+ce9 <- ce8 %>%
+  mutate(., 
+         comp_score = t_norm * weight)
+
+ce10 <- as.data.table(ce9) %>% 
+  dcast(., 
+       `Client ID` ~ group, value.var = "comp_score", fun.aggregate = sum) %>%
+  as.data.frame() %>%
+  as_tibble() %>%
+  mutate(., 
+         t_score = `Family Unit` + `Health and Wellness` + `Housing and Homeless History` + Risks)
+
+
+ce11 <- full_join(ce[,c(1:10, 30)], 
+          ce10) %>%
+  .[order(.$t_score),] %>%
+  mutate(., 
+         rank_order = 1:length(Race))
+
+library(ggplot2)
+
+ggplot() + 
+  geom_jitter(data = ce11, 
+              height = 0, width = 0.2,
+             aes(x = 0, y = rank_order, color = Race))+
+  scale_x_continuous(limits = c(-1,1))
+
+ggplot() + 
+  geom_boxplot(data = ce11, 
+             aes(x = Race, y = t_score))
