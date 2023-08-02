@@ -7,6 +7,14 @@ rm(list=ls());cat('\f')
 gc()
 
 
+# WEIGHTS----
+hhh   <- 1
+risks <- 2
+hw    <- 1
+fu    <- 3
+
+# DATA IMPORT----
+
 #https://ncceh.sharepoint.com/:x:/s/boscoccoordination/EbaXcHJZpX1Dirf1Ql7u_9YB5FTYsxfbI5uEmPHm2Z8zjg?e=e0ORVG
 
 ce <- read_tsv("Client ID	Household ID	Race	Ethnicty	Gender	Entry Date	Exit Date	Region	Provider	Provider Updating	How long has it been since you lived in your own place?	How many months have you been without a home, such as living outside or in a shelter?	Where did you sleep last night?	Where are you going to sleep tonight?	Are you currently experiencing or feel you are at risk of experiencing violence?	Did you leave your previous or current living situation because you felt unsafe?	Have you ever experienced violence with someone close to you?	Have you experienced violence since becoming homeless?	Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?	Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?	Is the lack of housing making it hard to get to a doctorâ€™s office or take prescribed medications?	Covered by Health Insurance	What is the size of your household? (including you)	Is anyone under 5 years old?	Is anyone 55 years or older?	Is anyone in the household pregnant?	How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)	How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)	Note
@@ -107,11 +115,10 @@ ce <- read_tsv("Client ID	Household ID	Race	Ethnicty	Gender	Entry Date	Exit Date
 1043525					7/1/2023		R05	Union County Community Shelter - Union County - Emergency Adult Shelter - ES - State ESG	Union County Community Shelter - Union County - Emergency Adult Shelter - ES - State ESG	12 to 35 months (1-2 years)	3 to 5 months	Sheltered (ES, TH)	Sheltered (ES, TH)	No	No	No	No	Yes	No	No	Yes (HUD)	3 or more people	No	No	No	1 or more	None	
 1043536					7/3/2023		R05	Rowan Helping Ministries - Rowan County -  Emergency Shelter - ES - Private	Rowan Helping Ministries - Rowan County -  Emergency Shelter - ES - Private	6 to 11 months	6 to 11 months	Sheltered (ES, TH)	Sheltered (ES, TH)	No	Yes	Yes	No	No	Yes, 1	Yes	Yes (HUD)	1-2 people	No	No	No	None	None	
 1043641	141355				7/6/2023		R05	Union County Community Shelter - Union County - Family Shelter - ES - State ESG	Union County Community Shelter - Union County - Family Shelter - ES - State ESG	3 to 5 months	3 to 5 months	Sheltered (ES, TH)	Sheltered (ES, TH)	Yes	No	No	No	Yes	Yes, 1	No	Yes (HUD)	3 or more people	No	No	No	1 or more	None	", 
-               col_types = paste(c("d", "d", 
-                                   rep("f", 3), 
-                                   "c", "c", 
-                                   rep("f", 21), 
-                                   "c"), sep = "", collapse = ""))
+               #col_types = paste(c("d", "d", rep("f", 3), "c", "c", rep("f", 21), "c"), sep = "", collapse = ""))
+)
+
+ce$rid <- 1:nrow(ce)
 #View(ce)
 colnames(ce)
 
@@ -120,7 +127,7 @@ ce$`Exit Date`  <- mdy(ce$`Exit Date`)
 
 
 # tidy to factor----
-stop("treat NAs as same numeric value as zero or mininal vulnerability")
+#stop("treat NAs as same numeric value as zero or mininal vulnerability")
 
 library(forcats)
 
@@ -154,7 +161,7 @@ levels(ce3$`Covered by Health Insurance`) <-
   levels(ce3$`Covered by Health Insurance`)[c(3,1,2)]
 
 df.colatts <- data.frame(long_name = colnames(ce3), 
-                         short_name = c("client_id", "hhid", 
+                         short_name = c("rid", "client_id", "hhid", 
                                         "race", "eth", "gender", "entry_date", "exit_date", 
                                         "region", "provider", "provider_updt", 
                                         "months_since_having_own_home", 
@@ -175,11 +182,18 @@ df.colatts <- data.frame(long_name = colnames(ce3),
                                         "hh_preg", 
                                         "non_hh_children_count", 
                                         "non_hh_adults_count", 
-                                        "note"))  %>%
+                                        "note"), 
+                         group = NA)  %>%
   as_tibble() 
 
 df.colatts$short_name
 
+df.colatts[grepl("^How long has it been|^How many months|^Where did you sleep|^Where are you going", df.colatts$long_name),]$group <- "Housing and Homeless History"
+df.colatts[grepl("^Did you leave|^Have you experienced|^Have you ever", df.colatts$long_name),]$group <- "Risks"
+df.colatts[grepl("^Does anyone in|Health Insurance|^Is the lack|kidney", df.colatts$long_name),]$group <- "Health and Wellness"
+df.colatts[grepl("^What is the|^Is anyone under|^Is anyone 55|^How many children|^How many adults", df.colatts$long_name),]$group <- "Family Unit"
+
+df.colatts
 
 # order vulnerability----
 ov <- read_tsv("How long has it been since you lived in your own place?	order_vuln
@@ -274,3 +288,32 @@ ov <- rbind(ov,data.frame(question = unique(ov$question),
          t_order = 1:length(response), 
          order_vuln = ifelse(order_vuln == -1, 0, order_vuln))
 
+ov
+
+# tidy ce3----
+
+
+
+library(data.table)
+ce4 <- as.data.table(ce3) %>%
+  melt(., 
+       id.vars = colnames(ce3)[c(1:10,30)], 
+       variable.name = "question", value.name = "response") %>%
+  as.data.frame() %>% 
+  as_tibble()
+
+ce5 <- left_join(ce4, ov, na_matches = "na")
+
+
+# normalize----
+ov_n <- ov %>%
+  group_by(question, order_vuln) %>%
+  summarise() %>%
+  ungroup() %>%
+  group_by(question) %>%
+  mutate(norm_vuln = order_vuln / max(order_vuln))
+
+
+ce6 <- left_join(ce5, ov_n, na_matches = "na")
+
+ce6$norm_vuln %>% table(., useNA = "always")
