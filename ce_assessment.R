@@ -8,19 +8,24 @@ gc()
 
 
 # WEIGHTS----
-hhh   <- 3 #1  # housing and homeless history
+hhh   <- 30 #1  # housing and homeless history
 risks <- 2    # risk factors
-hw    <- 3 #1  # health wellness
-fu    <- 10 #3  # family unit
+hw    <- 30 #1  # health wellness
+fu    <- 1 #3  # family unit
 
 # DATA IMPORT----
 
 # VI-SPDAT Level of Priority: 
-#* Highest = 15+ points 
+#* Highest = 15+17 points 
 #* Higher = 11-14 points 
 #* High = 8-10 
-#* Medium = 4-7 
+#* Medium = 4-7  
 #* Low = 0-3
+ 
+# Goal Testing Criteria: 
+# Top 20% Racial Distribution (43% Black) 
+# Overall Racial Distribution (43% Black)
+
  
 #https://ncceh.sharepoint.com/:x:/s/boscoccoordination/EbaXcHJZpX1Dirf1Ql7u_9YB5FTYsxfbI5uEmPHm2Z8zjg?e=e0ORVG
 
@@ -381,3 +386,16 @@ library(ggplot2)
 ggplot() + 
   geom_boxplot(data = ce11, 
              aes(x = Race, y = t_score))
+
+
+ce12 <- ce11[order(ce11$rank_order),]
+
+
+ce12$top_20pct <- c(rep(T,19), rep(F,97-19))
+
+ce12[ce12$top_20pct,] %>%
+  group_by(Race) %>%
+  summarise(n = n()) %>%
+  ungroup() %>%
+  mutate(., 
+         pct_r = n / sum(n))
