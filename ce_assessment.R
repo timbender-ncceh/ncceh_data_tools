@@ -140,25 +140,25 @@ ce3$Race
 ce3$Ethnicty
 ce3$Gender
 
-levels(ce3$`How long has it been since you lived in your own place?`) <- 
-  levels(ce3$`How long has it been since you lived in your own place?`)[c(1,4,5,3,2)] 
-
-
-ce3[,28] %>% unlist %>% unname %>% levels
-colnames(ce3)[28]
-
-levels(ce3$`How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)`) <- 
-  levels(ce3$`How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)`)[c(1,2)]
-
-levels(ce3$`Have you ever experienced violence with someone close to you?`) <- 
-  levels(ce3$`Have you ever experienced violence with someone close to you?`)[c(2,1)]
-
-levels(ce3$`How many months have you been without a home, such as living outside or in a shelter?`) <- 
-  levels(ce3$`How many months have you been without a home, such as living outside or in a shelter?`)[c(1,4,5,3,2)]
-
-# data not collected: do we do as NA? 
-levels(ce3$`Covered by Health Insurance`) <-
-  levels(ce3$`Covered by Health Insurance`)[c(3,1,2)]
+# levels(ce3$`How long has it been since you lived in your own place?`) <- 
+#   levels(ce3$`How long has it been since you lived in your own place?`)[c(1,4,5,3,2)] 
+# 
+# 
+# ce3[,28] %>% unlist %>% unname %>% levels
+# colnames(ce3)[28]
+# 
+# levels(ce3$`How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)`) <- 
+#   levels(ce3$`How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)`)[c(1,2)]
+# 
+# levels(ce3$`Have you ever experienced violence with someone close to you?`) <- 
+#   levels(ce3$`Have you ever experienced violence with someone close to you?`)[c(2,1)]
+# 
+# levels(ce3$`How many months have you been without a home, such as living outside or in a shelter?`) <- 
+#   levels(ce3$`How many months have you been without a home, such as living outside or in a shelter?`)[c(1,4,5,3,2)]
+# 
+# # data not collected: do we do as NA? 
+# levels(ce3$`Covered by Health Insurance`) <-
+#   levels(ce3$`Covered by Health Insurance`)[c(3,1,2)]
 
 df.colatts <- data.frame(long_name = colnames(ce3), 
                          short_name = c("rid", "client_id", "hhid", 
@@ -288,7 +288,7 @@ ov <- rbind(ov,data.frame(question = unique(ov$question),
          t_order = 1:length(response), 
          order_vuln = ifelse(order_vuln == -1, 0, order_vuln))
 
-ov
+ov$response[is.na(ov$response)] <- "na"
 
 # tidy ce3----
 
@@ -301,6 +301,8 @@ ce4 <- as.data.table(ce3) %>%
        variable.name = "question", value.name = "response") %>%
   as.data.frame() %>% 
   as_tibble()
+
+ce4$response[is.na(ce4$response)] <- "na"
 
 ce5 <- left_join(ce4, ov, na_matches = "na")
 
