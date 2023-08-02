@@ -8,10 +8,24 @@ gc()
 
 
 # WEIGHTS----
-hhh   <- 30 #1  # housing and homeless history
-risks <- 2    # risk factors
-hw    <- 30 #1  # health wellness
-fu    <- 1 #3  # family unit
+month_since_own_home                  <- 1                                                                        
+months_since_any_home                 <- 1                        
+loc_sleep_last_night                  <- 1                                                                              
+loc_sleep_tonight                     <- 1                                                                      
+now_or_at.risk_violence               <- 1                               
+leave_prev.curr_living_bc_felt_unsafe <- 1                                                   
+exp_violence_close                    <- 1                                                   
+exp_violence_homeless                 <- 1                                                            
+hh_phys.mntl_health_conds             <- 1
+hh_lung.kid.liv.heart.sud             <- 1
+had_get_doctor_rx                     <- 1              
+health_ins                            <- 1                                                                            
+hh_size                               <- 1                                                
+hh_anyone_5orUnder                    <- 1                                                                                 
+hh_anyone_55orOver                    <- 1                                                                                    
+hh_pregnant                           <- 1                                                                   
+non.hh_children                       <- 1 
+non.hh_adults                         <- 1
 
 # DATA IMPORT----
 
@@ -341,6 +355,50 @@ ce7 <- left_join(ce6,
           df.colatts, 
           by = c("question" = "long_name"))
 
+# vars_input----
+ce7$question %>% unique()
+df.colatts$long_name[11:28]
+df.colatts$short_name[11:28]
+
+qnames <- data.frame(long_name = c("How long has it been since you lived in your own place?" ,                                                                            
+                                   "How many months have you been without a home, such as living outside or in a shelter?" ,                                              
+                                   "Where did you sleep last night?",                                                                                                     
+                                   "Where are you going to sleep tonight?",                                                                                               
+                                   "Are you currently experiencing or feel you are at risk of experiencing violence?",                                                    
+                                   "Did you leave your previous or current living situation because you felt unsafe?",                                                    
+                                   "Have you ever experienced violence with someone close to you?",                                                                       
+                                   "Have you experienced violence since becoming homeless?",                                                                              
+                                   "Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?",
+                                   "Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?",       
+                                   "Is the lack of housing making it hard to get to a doctor's office or take prescribed medications?",                                   
+                                   "Covered by Health Insurance",                                                                                                         
+                                   "What is the size of your household? (including you)" ,                                                                                
+                                   "Is anyone under 5 years old?" ,                                                                                                       
+                                   "Is anyone 55 years or older?",                                                                                                        
+                                   "Is anyone in the household pregnant?" ,                                                                                               
+                                   "How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)",     
+                                   "How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)"),
+                     short_name = c("month_since_own_home" ,                                                                            
+                                   "months_since_any_home" ,                                              
+                                   "loc_sleep_last_night",                                                                                                     
+                                   "loc_sleep_tonight",                                                                                               
+                                   "now_or_at.risk_violence",                                                    
+                                   "leave_prev.curr_living_bc_felt_unsafe",                                                    
+                                   "exp_violence_close",                                                                       
+                                   "exp_violence_homeless",                                                                              
+                                   "hh_phys.mntl_health_conds",
+                                   "hh_lung.kid.liv.heart.sud",       
+                                   "had_get_doctor_rx",                                   
+                                   "health_ins",                                                                                                         
+                                   "hh_size" ,                                                                                
+                                   "hh_anyone_5orUnder" ,                                                                                                       
+                                   "hh_anyone_55orOver",                                                                                                        
+                                   "hh_pregnant" ,                                                                                               
+                                   "non.hh_children",     
+                                   "non.hh_adults"))
+
+
+# /vars_input----
 
 ce8 <- ce7 %>%
   group_by(`Client ID`, group) %>%
@@ -348,7 +406,7 @@ ce8 <- ce7 %>%
   .[!is.na(.$group),] %>%
   left_join(., 
             data.frame(question = c(NA), 
-                       weight = c(NA))) %>%
+                       weight   = c(NA))) %>%
   ungroup() 
 
 ce9 <- ce8 %>%
