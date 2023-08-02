@@ -8,13 +8,20 @@ gc()
 
 
 # WEIGHTS----
-hhh   <- 3*2 #1  # housing and homeless history
-risks <- 2/2    # risk factors
-hw    <- 3*2 #1  # health wellness
-fu    <- 1/4 #3  # family unit
+hhh   <- 3 #1  # housing and homeless history
+risks <- 2    # risk factors
+hw    <- 3 #1  # health wellness
+fu    <- 10 #3  # family unit
 
 # DATA IMPORT----
 
+# VI-SPDAT Level of Priority: 
+#* Highest = 15+ points 
+#* Higher = 11-14 points 
+#* High = 8-10 
+#* Medium = 4-7 
+#* Low = 0-3
+ 
 #https://ncceh.sharepoint.com/:x:/s/boscoccoordination/EbaXcHJZpX1Dirf1Ql7u_9YB5FTYsxfbI5uEmPHm2Z8zjg?e=e0ORVG
 
 ce <- read_tsv("Client ID	Household ID	Race	Ethnicty	Gender	Entry Date	Exit Date	Region	Provider	Provider Updating	How long has it been since you lived in your own place?	How many months have you been without a home, such as living outside or in a shelter?	Where did you sleep last night?	Where are you going to sleep tonight?	Are you currently experiencing or feel you are at risk of experiencing violence?	Did you leave your previous or current living situation because you felt unsafe?	Have you ever experienced violence with someone close to you?	Have you experienced violence since becoming homeless?	Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?	Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?	Is the lack of housing making it hard to get to a doctor's office or take prescribed medications?	Covered by Health Insurance	What is the size of your household? (including you)	Is anyone under 5 years old?	Is anyone 55 years or older?	Is anyone in the household pregnant?	How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)	How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)	Note
@@ -355,6 +362,8 @@ ce10 <- as.data.table(ce9) %>%
          t_score = `Family Unit` + `Health and Wellness` + `Housing and Homeless History` + Risks)
 
 
+
+
 ce11 <- full_join(ce[,c(1:10, 30)], 
           ce10) %>%
   .[order(.$t_score),] %>%
@@ -363,11 +372,11 @@ ce11 <- full_join(ce[,c(1:10, 30)],
 
 library(ggplot2)
 
-ggplot() + 
-  geom_jitter(data = ce11, 
-              height = 0, width = 0.2,
-             aes(x = 0, y = rank_order, color = Race))+
-  scale_x_continuous(limits = c(-1,1))
+# ggplot() + 
+#   geom_jitter(data = ce11, 
+#               height = 0, width = 0.2,
+#              aes(x = 0, y = rank_order, color = Race))+
+#   scale_x_continuous(limits = c(-1,1))
 
 ggplot() + 
   geom_boxplot(data = ce11, 
