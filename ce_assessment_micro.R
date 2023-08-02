@@ -346,12 +346,9 @@ ce8 <- ce7 %>%
   group_by(`Client ID`, group) %>%
   summarise(t_norm = sum(norm_vuln)) %>%
   .[!is.na(.$group),] %>%
-   left_join(., 
-             data.frame(group = c("Family Unit", 
-                                  "Health and Wellness", 
-                                  "Housing and Homeless History", 
-                                  "Risks"), 
-                        weight = c(fu, hw, hhh, risks))) %>%
+  left_join(., 
+            data.frame(question = c(NA), 
+                       weight = c(NA))) %>%
   ungroup() 
 
 ce9 <- ce8 %>%
