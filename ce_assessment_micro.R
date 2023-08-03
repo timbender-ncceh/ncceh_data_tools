@@ -195,42 +195,7 @@ df.colatts <- data.frame(long_name = c("How long has it been since you lived in 
                                     "non.hh_children",     
                                     "non.hh_adults"))
 
-#df.colatts <- NULL
 
-# df.colatts <- data.frame(long_name = colnames(ce3), 
-#                          short_name = c("rid", "client_id", "hhid", 
-#                                         "race", "eth", "gender", "entry_date", "exit_date", 
-#                                         "region", "provider", "provider_updt", 
-#                                         "months_since_having_own_home", 
-#                                         "months_without_any_home", 
-#                                         "loc_slept_last_night", 
-#                                         "loc_sleep_tonight", 
-#                                         "cur_violence_or_at_risk", 
-#                                         "leave_prev_house_bc_unsafe",
-#                                         "ever_violence_close", 
-#                                         "ever_violence_since_homeless", 
-#                                         "hh_phys.or.mntl_health_cond", 
-#                                         "hh_lung.kidney.liver.heart.substanceuse", 
-#                                         "hard_find_doc.or.meds_bc_homeless", 
-#                                         "have_health_ins", 
-#                                         "hh_size", 
-#                                         "hh_5yo_or_under", 
-#                                         "hh_55yo_or_over", 
-#                                         "hh_preg", 
-#                                         "non_hh_children_count", 
-#                                         "non_hh_adults_count", 
-#                                         "note"), 
-#                          group = NA)  %>%
-#   as_tibble() 
-# 
-# df.colatts$short_name
-# 
-# df.colatts[grepl("^How long has it been|^How many months|^Where did you sleep|^Where are you going", df.colatts$long_name),]$group <- "Housing and Homeless History"
-# df.colatts[grepl("^Did you leave|^Have you experienced|^Have you ever", df.colatts$long_name),]$group <- "Risks"
-# df.colatts[grepl("^Does anyone in|Health Insurance|^Is the lack|kidney", df.colatts$long_name),]$group <- "Health and Wellness"
-# df.colatts[grepl("^What is the|^Is anyone under|^Is anyone 55|^How many children|^How many adults", df.colatts$long_name),]$group <- "Family Unit"
-# 
-# df.colatts
 
 # order vulnerability----
 ov <- read_tsv("How long has it been since you lived in your own place?	order_vuln
