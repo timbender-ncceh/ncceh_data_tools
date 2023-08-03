@@ -327,7 +327,6 @@ ov <- ov[ov$X2 != "order_vuln",]
 colnames(ov)[1:2] <- c("response", "order_vuln")
 
 ov$order_vuln <- as.numeric(ov$order_vuln)
-
 ov <- ov[order(ov$question, ov$order_vuln),]
 
 ov <- rbind(ov,data.frame(question = unique(ov$question), 
@@ -340,94 +339,126 @@ ov <- rbind(ov,data.frame(question = unique(ov$question),
 
 ov$response[is.na(ov$response)] <- "na"
 
-ov
+ov %>%
+  group_by(question) %>%
+  summarise(min_v = min(order_vuln), 
+            max_v = max(order_vuln))
 
-# tidy ce3----
+ov <- group_by(ov, question) %>%
+  mutate(., 
+         pct_v = order_vuln / max(order_vuln)) %>%
+  ungroup() %>%
+  .[,c("t_order", "question", "response", 
+       "order_vuln", "pct_v")]
 
-
-
-library(data.table)
-ce4 <- as.data.table(ce3) %>%
+ce2 <- ce %>% 
+  as.data.table() %>%
   melt(., 
-       id.vars = colnames(ce3)[c(1:10,30)], 
-       variable.name = "question", value.name = "response") %>%
-  as.data.frame() %>% 
+       id.vars = c("Client ID", 
+                   "Household ID", 
+                   "Race", "Ethnicty", "Gender", 
+                   "Entry Date", "Exit Date", 
+                   "Region", "Provider", 
+                   "Provider Updating", 
+                   "rid", "Note"), 
+       value.name = "response", 
+       variable.name = "question") %>%
+  as.data.frame() %>%
   as_tibble()
 
-ce4$response[is.na(ce4$response)] <- "na"
-
-ce5 <- left_join(ce4, ov)
-
-
-# normalize----
-ov_n <- ov %>%
-  group_by(question, order_vuln) %>%
-  summarise() %>%
-  ungroup() %>%
-  group_by(question) %>%
-  mutate(norm_vuln = order_vuln / max(order_vuln))
-
-
-ce6 <- left_join(ce5, ov_n)
-
-ce6[is.na(ce6$norm_vuln),]$question %>% unique()
-
-ce6$norm_vuln %>% table(., useNA = "always")
-
-ce7 <- left_join(ce6, 
-          df.colatts, 
-          by = c("question" = "long_name"))
-
-# vars_input----
-ce7$question %>% unique()
-df.colatts$long_name[11:28]
-df.colatts$short_name[11:28]
-
-
-
-
-# /vars_input----
-
-ce8 <- ce7 %>%
-  group_by(`Client ID`, group) %>%
-  summarise(t_norm = sum(norm_vuln)) %>%
-  .[!is.na(.$group),] %>%
+# consolidation----
+ce2 <- left_join(ce2,ov[,c("question", "response", "pct_v")]) %>%
   left_join(., 
-            data.frame(question = c(NA), 
-                       weight   = c(NA))) %>%
-  ungroup() 
+            df.colatts, 
+            by = c("question" = "long_name")) %>%
+  left_join(., 
+            qg2[,c("question", "group")])
 
-ce9 <- ce8 %>%
-  mutate(., 
-         comp_score = t_norm * weight)
+ce2
 
-ce10 <- as.data.table(ce9) %>% 
-  dcast(., 
-       `Client ID` ~ group, value.var = "comp_score", fun.aggregate = sum) %>%
-  as.data.frame() %>%
-  as_tibble() %>%
-  mutate(., 
-         t_score = `Family Unit` + `Health and Wellness` + `Housing and Homeless History` + Risks)
-
-
-
-
-ce11 <- full_join(ce[,c(1:10, 30)], 
-          ce10) %>%
-  .[order(.$t_score),] %>%
-  mutate(., 
-         rank_order = 1:length(Race))
-
+# # tidy ce3----
+# 
+# ce4 <- as.data.table(ce3) %>%
+#   melt(., 
+#        id.vars = colnames(ce3)[c(1:10,30)], 
+#        variable.name = "question", value.name = "response") %>%
+#   as.data.frame() %>% 
+#   as_tibble()
+# 
+# ce4$response[is.na(ce4$response)] <- "na"
+# 
+# ce5 <- left_join(ce4, ov)
+# 
+# 
+# # normalize----
+# ov_n <- ov %>%
+#   group_by(question, order_vuln) %>%
+#   summarise() %>%
+#   ungroup() %>%
+#   group_by(question) %>%
+#   mutate(norm_vuln = order_vuln / max(order_vuln))
+# 
+# 
+# ce6 <- left_join(ce5, ov_n)
+# 
+# ce6[is.na(ce6$norm_vuln),]$question %>% unique()
+# 
+# ce6$norm_vuln %>% table(., useNA = "always")
+# 
+# ce7 <- left_join(ce6, 
+#           df.colatts, 
+#           by = c("question" = "long_name"))
+# 
+# # vars_input----
+# ce7$question %>% unique()
+# df.colatts$long_name[11:28]
+# df.colatts$short_name[11:28]
+# 
+# 
+# 
+# 
+# # /vars_input----
+# 
+# ce8 <- ce7 %>%
+#   group_by(`Client ID`, group) %>%
+#   summarise(t_norm = sum(norm_vuln)) %>%
+#   .[!is.na(.$group),] %>%
+#   left_join(., 
+#             data.frame(question = c(NA), 
+#                        weight   = c(NA))) %>%
+#   ungroup() 
+# 
+# ce9 <- ce8 %>%
+#   mutate(., 
+#          comp_score = t_norm * weight)
+# 
+# ce10 <- as.data.table(ce9) %>% 
+#   dcast(., 
+#        `Client ID` ~ group, value.var = "comp_score", fun.aggregate = sum) %>%
+#   as.data.frame() %>%
+#   as_tibble() %>%
+#   mutate(., 
+#          t_score = `Family Unit` + `Health and Wellness` + `Housing and Homeless History` + Risks)
+# 
+# 
+# 
+# 
+# ce11 <- full_join(ce[,c(1:10, 30)], 
+#           ce10) %>%
+#   .[order(.$t_score),] %>%
+#   mutate(., 
+#          rank_order = 1:length(Race))
+# 
 library(ggplot2)
 
-# ggplot() + 
-#   geom_jitter(data = ce11, 
+# ggplot() +
+#   geom_jitter(data = ce11,
 #               height = 0, width = 0.2,
 #              aes(x = 0, y = rank_order, color = Race))+
 #   scale_x_continuous(limits = c(-1,1))
 
-ggplot() + 
-  geom_boxplot(data = ce11, 
+ggplot() +
+  geom_boxplot(data = ce11,
              aes(x = Race, y = t_score))
 
 
@@ -440,5 +471,5 @@ ce12[ce12$top_20pct,] %>%
   group_by(Race) %>%
   summarise(n = n()) %>%
   ungroup() %>%
-  mutate(., 
+  mutate(.,
          pct_r = n / sum(n))
