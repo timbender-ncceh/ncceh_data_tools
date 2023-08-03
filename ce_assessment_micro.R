@@ -3,6 +3,7 @@ library(dplyr)
 library(lubridate)
 library(data.table)
 library(ggplot2)
+library(forcats)
 
 rm(list=ls());cat('\f')
 gc()
@@ -146,47 +147,18 @@ ce <- read_tsv("Client ID	Household ID	Race	Ethnicty	Gender	Entry Date	Exit Date
 )
 
 ce$rid <- 1:nrow(ce)
-#View(ce)
-colnames(ce)
 
 ce$`Entry Date` <- mdy(ce$`Entry Date`)
 ce$`Exit Date`  <- mdy(ce$`Exit Date`)
 
 
-# tidy to factor----
-#stop("treat NAs as same numeric value as zero or mininal vulnerability")
-
-library(forcats)
-
-colnames(ce)
-
-#ce3 <- ce
-# ce3$Race
-# ce3$Ethnicty
-# ce3$Gender
-
-# levels(ce3$`How long has it been since you lived in your own place?`) <- 
-#   levels(ce3$`How long has it been since you lived in your own place?`)[c(1,4,5,3,2)] 
-# 
-# 
-# ce3[,28] %>% unlist %>% unname %>% levels
-# colnames(ce3)[28]
-# 
-# levels(ce3$`How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)`) <- 
-#   levels(ce3$`How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)`)[c(1,2)]
-# 
-# levels(ce3$`Have you ever experienced violence with someone close to you?`) <- 
-#   levels(ce3$`Have you ever experienced violence with someone close to you?`)[c(2,1)]
-# 
-# levels(ce3$`How many months have you been without a home, such as living outside or in a shelter?`) <- 
-#   levels(ce3$`How many months have you been without a home, such as living outside or in a shelter?`)[c(1,4,5,3,2)]
-# 
-# # data not collected: do we do as NA? 
-# levels(ce3$`Covered by Health Insurance`) <-
-#   levels(ce3$`Covered by Health Insurance`)[c(3,1,2)]
+# Treat NAs----
+# <to do>
 
 
-qnames <- data.frame(long_name = c("How long has it been since you lived in your own place?" ,                                                                            
+
+# Questions and responses and groups----
+df.colatts <- data.frame(long_name = c("How long has it been since you lived in your own place?" ,                                                                            
                                    "How many months have you been without a home, such as living outside or in a shelter?" ,                                              
                                    "Where did you sleep last night?",                                                                                                     
                                    "Where are you going to sleep tonight?",                                                                                               
@@ -223,7 +195,7 @@ qnames <- data.frame(long_name = c("How long has it been since you lived in your
                                     "non.hh_children",     
                                     "non.hh_adults"))
 
-df.colatts <- NULL
+#df.colatts <- NULL
 
 # df.colatts <- data.frame(long_name = colnames(ce3), 
 #                          short_name = c("rid", "client_id", "hhid", 
