@@ -160,12 +160,10 @@ library(forcats)
 
 colnames(ce)
 
-ce3 <- ce
-
-
-ce3$Race
-ce3$Ethnicty
-ce3$Gender
+#ce3 <- ce
+# ce3$Race
+# ce3$Ethnicty
+# ce3$Gender
 
 # levels(ce3$`How long has it been since you lived in your own place?`) <- 
 #   levels(ce3$`How long has it been since you lived in your own place?`)[c(1,4,5,3,2)] 
