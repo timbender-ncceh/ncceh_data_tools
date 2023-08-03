@@ -2,6 +2,7 @@ library(readr)
 library(dplyr)
 library(lubridate)
 library(data.table)
+library(ggplot2)
 
 rm(list=ls());cat('\f')
 gc()
@@ -186,40 +187,80 @@ ce3$Gender
 # levels(ce3$`Covered by Health Insurance`) <-
 #   levels(ce3$`Covered by Health Insurance`)[c(3,1,2)]
 
-df.colatts <- data.frame(long_name = colnames(ce3), 
-                         short_name = c("rid", "client_id", "hhid", 
-                                        "race", "eth", "gender", "entry_date", "exit_date", 
-                                        "region", "provider", "provider_updt", 
-                                        "months_since_having_own_home", 
-                                        "months_without_any_home", 
-                                        "loc_slept_last_night", 
-                                        "loc_sleep_tonight", 
-                                        "cur_violence_or_at_risk", 
-                                        "leave_prev_house_bc_unsafe",
-                                        "ever_violence_close", 
-                                        "ever_violence_since_homeless", 
-                                        "hh_phys.or.mntl_health_cond", 
-                                        "hh_lung.kidney.liver.heart.substanceuse", 
-                                        "hard_find_doc.or.meds_bc_homeless", 
-                                        "have_health_ins", 
-                                        "hh_size", 
-                                        "hh_5yo_or_under", 
-                                        "hh_55yo_or_over", 
-                                        "hh_preg", 
-                                        "non_hh_children_count", 
-                                        "non_hh_adults_count", 
-                                        "note"), 
-                         group = NA)  %>%
-  as_tibble() 
 
-df.colatts$short_name
+qnames <- data.frame(long_name = c("How long has it been since you lived in your own place?" ,                                                                            
+                                   "How many months have you been without a home, such as living outside or in a shelter?" ,                                              
+                                   "Where did you sleep last night?",                                                                                                     
+                                   "Where are you going to sleep tonight?",                                                                                               
+                                   "Are you currently experiencing or feel you are at risk of experiencing violence?",                                                    
+                                   "Did you leave your previous or current living situation because you felt unsafe?",                                                    
+                                   "Have you ever experienced violence with someone close to you?",                                                                       
+                                   "Have you experienced violence since becoming homeless?",                                                                              
+                                   "Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?",
+                                   "Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?",       
+                                   "Is the lack of housing making it hard to get to a doctor's office or take prescribed medications?",                                   
+                                   "Covered by Health Insurance",                                                                                                         
+                                   "What is the size of your household? (including you)" ,                                                                                
+                                   "Is anyone under 5 years old?" ,                                                                                                       
+                                   "Is anyone 55 years or older?",                                                                                                        
+                                   "Is anyone in the household pregnant?" ,                                                                                               
+                                   "How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)",     
+                                   "How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)"),
+                     short_name = c("month_since_own_home" ,                                                                            
+                                    "months_since_any_home" ,                                              
+                                    "loc_sleep_last_night",                                                                                                     
+                                    "loc_sleep_tonight",                                                                                               
+                                    "now_or_at.risk_violence",                                                    
+                                    "leave_prev.curr_living_bc_felt_unsafe",                                                    
+                                    "exp_violence_close",                                                                       
+                                    "exp_violence_homeless",                                                                              
+                                    "hh_phys.mntl_health_conds",
+                                    "hh_lung.kid.liv.heart.sud",       
+                                    "had_get_doctor_rx",                                   
+                                    "health_ins",                                                                                                         
+                                    "hh_size" ,                                                                                
+                                    "hh_anyone_5orUnder" ,                                                                                                       
+                                    "hh_anyone_55orOver",                                                                                                        
+                                    "hh_pregnant" ,                                                                                               
+                                    "non.hh_children",     
+                                    "non.hh_adults"))
 
-df.colatts[grepl("^How long has it been|^How many months|^Where did you sleep|^Where are you going", df.colatts$long_name),]$group <- "Housing and Homeless History"
-df.colatts[grepl("^Did you leave|^Have you experienced|^Have you ever", df.colatts$long_name),]$group <- "Risks"
-df.colatts[grepl("^Does anyone in|Health Insurance|^Is the lack|kidney", df.colatts$long_name),]$group <- "Health and Wellness"
-df.colatts[grepl("^What is the|^Is anyone under|^Is anyone 55|^How many children|^How many adults", df.colatts$long_name),]$group <- "Family Unit"
+df.colatts <- NULL
 
-df.colatts
+# df.colatts <- data.frame(long_name = colnames(ce3), 
+#                          short_name = c("rid", "client_id", "hhid", 
+#                                         "race", "eth", "gender", "entry_date", "exit_date", 
+#                                         "region", "provider", "provider_updt", 
+#                                         "months_since_having_own_home", 
+#                                         "months_without_any_home", 
+#                                         "loc_slept_last_night", 
+#                                         "loc_sleep_tonight", 
+#                                         "cur_violence_or_at_risk", 
+#                                         "leave_prev_house_bc_unsafe",
+#                                         "ever_violence_close", 
+#                                         "ever_violence_since_homeless", 
+#                                         "hh_phys.or.mntl_health_cond", 
+#                                         "hh_lung.kidney.liver.heart.substanceuse", 
+#                                         "hard_find_doc.or.meds_bc_homeless", 
+#                                         "have_health_ins", 
+#                                         "hh_size", 
+#                                         "hh_5yo_or_under", 
+#                                         "hh_55yo_or_over", 
+#                                         "hh_preg", 
+#                                         "non_hh_children_count", 
+#                                         "non_hh_adults_count", 
+#                                         "note"), 
+#                          group = NA)  %>%
+#   as_tibble() 
+# 
+# df.colatts$short_name
+# 
+# df.colatts[grepl("^How long has it been|^How many months|^Where did you sleep|^Where are you going", df.colatts$long_name),]$group <- "Housing and Homeless History"
+# df.colatts[grepl("^Did you leave|^Have you experienced|^Have you ever", df.colatts$long_name),]$group <- "Risks"
+# df.colatts[grepl("^Does anyone in|Health Insurance|^Is the lack|kidney", df.colatts$long_name),]$group <- "Health and Wellness"
+# df.colatts[grepl("^What is the|^Is anyone under|^Is anyone 55|^How many children|^How many adults", df.colatts$long_name),]$group <- "Family Unit"
+# 
+# df.colatts
 
 # order vulnerability----
 ov <- read_tsv("How long has it been since you lived in your own place?	order_vuln
@@ -301,6 +342,7 @@ for(i in 1:nrow(ov)){
   }
   ov$question[i] <- temp.q
 }
+rm(temp.q,i)
 
 ov <- ov[ov$X2 != "order_vuln",]
 colnames(ov)[1:2] <- c("response", "order_vuln")
@@ -318,6 +360,8 @@ ov <- rbind(ov,data.frame(question = unique(ov$question),
          order_vuln = ifelse(order_vuln == -1, 0, order_vuln))
 
 ov$response[is.na(ov$response)] <- "na"
+
+ov
 
 # tidy ce3----
 
@@ -360,42 +404,7 @@ ce7$question %>% unique()
 df.colatts$long_name[11:28]
 df.colatts$short_name[11:28]
 
-qnames <- data.frame(long_name = c("How long has it been since you lived in your own place?" ,                                                                            
-                                   "How many months have you been without a home, such as living outside or in a shelter?" ,                                              
-                                   "Where did you sleep last night?",                                                                                                     
-                                   "Where are you going to sleep tonight?",                                                                                               
-                                   "Are you currently experiencing or feel you are at risk of experiencing violence?",                                                    
-                                   "Did you leave your previous or current living situation because you felt unsafe?",                                                    
-                                   "Have you ever experienced violence with someone close to you?",                                                                       
-                                   "Have you experienced violence since becoming homeless?",                                                                              
-                                   "Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?",
-                                   "Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?",       
-                                   "Is the lack of housing making it hard to get to a doctor's office or take prescribed medications?",                                   
-                                   "Covered by Health Insurance",                                                                                                         
-                                   "What is the size of your household? (including you)" ,                                                                                
-                                   "Is anyone under 5 years old?" ,                                                                                                       
-                                   "Is anyone 55 years or older?",                                                                                                        
-                                   "Is anyone in the household pregnant?" ,                                                                                               
-                                   "How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)",     
-                                   "How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)"),
-                     short_name = c("month_since_own_home" ,                                                                            
-                                   "months_since_any_home" ,                                              
-                                   "loc_sleep_last_night",                                                                                                     
-                                   "loc_sleep_tonight",                                                                                               
-                                   "now_or_at.risk_violence",                                                    
-                                   "leave_prev.curr_living_bc_felt_unsafe",                                                    
-                                   "exp_violence_close",                                                                       
-                                   "exp_violence_homeless",                                                                              
-                                   "hh_phys.mntl_health_conds",
-                                   "hh_lung.kid.liv.heart.sud",       
-                                   "had_get_doctor_rx",                                   
-                                   "health_ins",                                                                                                         
-                                   "hh_size" ,                                                                                
-                                   "hh_anyone_5orUnder" ,                                                                                                       
-                                   "hh_anyone_55orOver",                                                                                                        
-                                   "hh_pregnant" ,                                                                                               
-                                   "non.hh_children",     
-                                   "non.hh_adults"))
+
 
 
 # /vars_input----
