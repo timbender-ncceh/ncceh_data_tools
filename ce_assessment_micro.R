@@ -155,6 +155,50 @@ ce$`Exit Date`  <- mdy(ce$`Exit Date`)
 # Treat NAs----
 # <to do>
 
+# question groups----
+qg <- read_tsv("	Housing and Homeless History
+1	How long has it been since you lived in your own place?
+2	How many months have you been without a home, such as living outside or in a shelter?
+3	Where did you sleep last night?
+4	Where are you going to sleep tonight?
+	
+	
+	Risks
+5	Did you leave your previous or current living situation because someone made you feel unsafe?
+6	Have you experienced violence or assault since becoming homeless?
+7	Have you ever experienced violence with someone close to you?
+	
+	
+	Health and Wellness
+8	Does anyone in your household have any physical or behavioral health conditions that are treated or have been treated by a professional?
+9	Do you have a substance use disorder, kidney or liver failure, heart disease, or lung cancer? (how many?)
+10	Do you have health insurance?
+11	Is the lack of housing making it hard to get to a doctor’s office or take prescribed medications?
+	
+	
+	Family Unit
+12	What is the size of your household? (including you)
+13	Is anyone under 5 years old?
+14	Is anyone 55 years or older?
+15	Is anyone in the household pregnant?
+16	How many children under the age of 18 are not currently staying with your family, but would live with you?
+17	How many adults 18 or older are not currently staying with your family, but would live with you?", 
+               col_names = F)
+
+qg2 <- NULL
+temp.group <- qg$X2[1]
+for(i in 1:nrow(qg)){
+  if(is.na(qg$X1[i])){
+    temp.group <- qg$X2[i]
+  }else{
+    qg2 <- rbind(qg2, 
+                 data.frame(question = qg$X2[i], 
+                            group    = temp.group, 
+                            orig.ord = qg$X1[i]))
+  }
+}
+qg2 <- qg2 %>% as_tibble()
+rm(qg, i, temp.group)
 
 
 # Questions and responses and groups----
