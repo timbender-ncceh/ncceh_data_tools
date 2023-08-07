@@ -10,24 +10,8 @@ gc()
 
 
 # New Steps----
-# 1. vars inputs
-
-# 2. read data
-
-# 3. assign number to responses
-
-# 4. normalize responses
-
-# 5. weigh normalized responses
-
-# 6. calculate composite score
-
-# 7. sort by composite score
-
-
-
-# Older stuff----
-# WEIGHTS----
+# 1. vars inputs----
+# WEIGHTS
 month_since_own_home                  <- 1                                                                        
 months_since_any_home                 <- 1                        
 loc_sleep_last_night                  <- 1                                                                              
@@ -38,7 +22,7 @@ exp_violence_close                    <- 1
 exp_violence_homeless                 <- 1                                                            
 hh_phys.mntl_health_conds             <- 1
 hh_lung.kid.liv.heart.sud             <- 1
-had_get_doctor_rx                     <- 1              
+hard_get_doctor_rx                    <- 1              
 health_ins                            <- 1                                                                            
 hh_size                               <- 1                                                
 hh_anyone_5orUnder                    <- 1                                                                                 
@@ -47,22 +31,7 @@ hh_pregnant                           <- 1
 non.hh_children                       <- 1 
 non.hh_adults                         <- 1
 
-# DATA IMPORT----
-
-# VI-SPDAT Level of Priority: 
-#* Highest = 15+17 points 
-#* Higher = 11-14 points 
-#* High = 8-10 
-#* Medium = 4-7  
-#* Low = 0-3
- 
-# Goal Testing Criteria: 
-# Top 20% Racial Distribution (43% Black) 
-# Overall Racial Distribution (43% Black)
-
- 
-#https://ncceh.sharepoint.com/:x:/s/boscoccoordination/EbaXcHJZpX1Dirf1Ql7u_9YB5FTYsxfbI5uEmPHm2Z8zjg?e=e0ORVG
-
+# 2. read data and tidy----
 ce <- read_tsv("Client ID	Household ID	Race	Ethnicty	Gender	Entry Date	Exit Date	Region	Provider	Provider Updating	How long has it been since you lived in your own place?	How many months have you been without a home, such as living outside or in a shelter?	Where did you sleep last night?	Where are you going to sleep tonight?	Are you currently experiencing or feel you are at risk of experiencing violence?	Did you leave your previous or current living situation because you felt unsafe?	Have you ever experienced violence with someone close to you?	Have you experienced violence since becoming homeless?	Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?	Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?	Is the lack of housing making it hard to get to a doctors office or take prescribed medications?	Covered by Health Insurance	What is the size of your household? (including you)	Is anyone under 5 years old?	Is anyone 55 years or older?	Is anyone in the household pregnant?	How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)	How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)	Note
 136715		White	Non-Hispanic	Male	6/20/2023	7/1/2023	R05	Union County Community Shelter - Union County - Emergency Adult Shelter - ES - State ESG	Union County Community Shelter - Union County - Emergency Adult Shelter - ES - State ESG	Less than 3 months	Less than 3 months	Sheltered (ES, TH)	Sheltered (ES, TH)	No	No	Yes	No	No	No	No	No (HUD)	1-2 people	No	No	No	1 or more	None	
 285031		Black	Non-Hispanic	Male	6/10/2023	7/1/2023	R05	Rowan Helping Ministries - Rowan County -  Emergency Shelter - ES - Private	Rowan Helping Ministries - Rowan County -  Emergency Shelter - ES - Private	36 months (3 years) or more	36 months (3 years) or more	Sheltered (ES, TH)	Sheltered (ES, TH)	Yes	Yes	No	Yes	Yes	Yes, 1	Yes	Yes (HUD)	1-2 people	No	No	No	None	None	
@@ -165,107 +134,32 @@ ce <- read_tsv("Client ID	Household ID	Race	Ethnicty	Gender	Entry Date	Exit Date
 )
 
 ce$rid <- 1:nrow(ce)
-
 ce$`Entry Date` <- mdy(ce$`Entry Date`)
 ce$`Exit Date`  <- mdy(ce$`Exit Date`)
 
-
-# Treat NAs----
-# <to do>
-
-# question groups----
-qg <- read_tsv("	Housing and Homeless History
-1	How long has it been since you lived in your own place?
-2	How many months have you been without a home, such as living outside or in a shelter?
-3	Where did you sleep last night?
-4	Where are you going to sleep tonight?
-	
-	
-	Risks
-5	Did you leave your previous or current living situation because you felt unsafe?
-6	Have you experienced violence since becoming homeless?
-7	Have you ever experienced violence with someone close to you?
-7.1	Are you currently experiencing or feel you are at risk of experiencing violence?
-	
-	Health and Wellness
-8	Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?
-9	Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?
-10	Covered by Health Insurance
-11	Is the lack of housing making it hard to get to a doctors office or take prescribed medications?
-	
-	
-	Family Unit
-12	What is the size of your household? (including you)
-13	Is anyone under 5 years old?
-14	Is anyone 55 years or older?
-15	Is anyone in the household pregnant?
-16	How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)
-17	How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)", 
-               col_names = F)
-
-qg2 <- NULL
-temp.group <- qg$X2[1]
-for(i in 1:nrow(qg)){
-  if(is.na(qg$X1[i])){
-    temp.group <- qg$X2[i]
-  }else{
-    qg2 <- rbind(qg2, 
-                 data.frame(question = qg$X2[i], 
-                            group    = temp.group, 
-                            orig.ord = qg$X1[i]))
-  }
-}
-qg2 <- qg2 %>% as_tibble()
-rm(qg, i, temp.group)
-
-qg2$question
-
-
-# Questions and responses and groups----
-df.colatts <- data.frame(long_name = c("How long has it been since you lived in your own place?" ,                                                                            
-                                   "How many months have you been without a home, such as living outside or in a shelter?" ,                                              
-                                   "Where did you sleep last night?",                                                                                                     
-                                   "Where are you going to sleep tonight?",                                                                                               
-                                   "Are you currently experiencing or feel you are at risk of experiencing violence?",                                                    
-                                   "Did you leave your previous or current living situation because you felt unsafe?",                                                    
-                                   "Have you ever experienced violence with someone close to you?",                                                                       
-                                   "Have you experienced violence since becoming homeless?",                                                                              
-                                   "Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?",
-                                   "Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?",       
-                                   "Is the lack of housing making it hard to get to a doctors office or take prescribed medications?",                                   
-                                   "Covered by Health Insurance",                                                                                                         
-                                   "What is the size of your household? (including you)" ,                                                                                
-                                   "Is anyone under 5 years old?" ,                                                                                                       
-                                   "Is anyone 55 years or older?",                                                                                                        
-                                   "Is anyone in the household pregnant?" ,                                                                                               
-                                   "How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)",     
-                                   "How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)"),
-                     short_name = c("month_since_own_home" ,                                                                            
-                                    "months_since_any_home" ,                                              
-                                    "loc_sleep_last_night",                                                                                                     
-                                    "loc_sleep_tonight",                                                                                               
-                                    "now_or_at.risk_violence",                                                    
-                                    "leave_prev.curr_living_bc_felt_unsafe",                                                    
-                                    "exp_violence_close",                                                                       
-                                    "exp_violence_homeless",                                                                              
-                                    "hh_phys.mntl_health_conds",
-                                    "hh_lung.kid.liv.heart.sud",       
-                                    "had_get_doctor_rx",                                   
-                                    "health_ins",                                                                                                         
-                                    "hh_size" ,                                                                                
-                                    "hh_anyone_5orUnder" ,                                                                                                       
-                                    "hh_anyone_55orOver",                                                                                                        
-                                    "hh_pregnant" ,                                                                                               
-                                    "non.hh_children",     
-                                    "non.hh_adults"))
-
-# error check 1----
-if(!all(df.colatts$long_name %in% qg2$question & 
-  qg2$question %in% df.colatts$long_name)){
-  stop("ERROR 1: question language does not match between <qg2> and <df.colatts>")
+# Treat NAs
+for(i in c(11:(ncol(ce)-2))){
+  ce[,i] <- ifelse(is.na(unname(unlist(ce[,i]))), 
+                   "na", 
+                   unname(unlist(ce[,i])))
 }
 
+ce2 <- ce %>% 
+  as.data.table() %>%
+  melt(., 
+       id.vars = c("Client ID", 
+                   "Household ID", 
+                   "Race", "Ethnicty", "Gender", 
+                   "Entry Date", "Exit Date", 
+                   "Region", "Provider", 
+                   "Provider Updating", 
+                   "rid", "Note"), 
+       value.name = "response", 
+       variable.name = "question") %>%
+  as.data.frame() %>%
+  as_tibble()
 
+# 3. assign number to responses----
 # order vulnerability----
 ov <- read_tsv("How long has it been since you lived in your own place?	order_vuln
 12 to 35 months (1-2 years)	3
@@ -364,11 +258,21 @@ ov <- rbind(ov,data.frame(question = unique(ov$question),
 
 ov$response[is.na(ov$response)] <- "na"
 
-ov %>%
-  group_by(question) %>%
-  summarise(min_v = min(order_vuln), 
-            max_v = max(order_vuln))
+# ov %>%
+#   group_by(response, order_vuln) %>%
+#   summarise(n_ov = n_distinct(order_vuln))
 
+ov$order_vuln <- ov$order_vuln + 1
+
+# ov %>%
+#   group_by(question) %>%
+#   summarise(n_d = n_distinct(order_vuln), 
+#             min_v = min(order_vuln), 
+#             max_v = max(order_vuln)) %>%
+#   mutate(., 
+#          check = n_d == (max_v - min_v +1))
+
+# 4. normalize responses----
 ov <- group_by(ov, question) %>%
   mutate(., 
          pct_v = order_vuln / max(order_vuln)) %>%
@@ -376,117 +280,248 @@ ov <- group_by(ov, question) %>%
   .[,c("t_order", "question", "response", 
        "order_vuln", "pct_v")]
 
-ce2 <- ce %>% 
-  as.data.table() %>%
-  melt(., 
-       id.vars = c("Client ID", 
-                   "Household ID", 
-                   "Race", "Ethnicty", "Gender", 
-                   "Entry Date", "Exit Date", 
-                   "Region", "Provider", 
-                   "Provider Updating", 
-                   "rid", "Note"), 
-       value.name = "response", 
-       variable.name = "question") %>%
-  as.data.frame() %>%
-  as_tibble()
+ce2 <- left_join(ce2, ov)
 
-# consolidation----
-ce2 <- left_join(ce2,ov[,c("question", "response", "pct_v")]) %>%
-  left_join(., 
-            df.colatts, 
-            by = c("question" = "long_name")) %>%
-  left_join(., 
-            qg2[,c("question", "group")])
+# 5. weigh normalized responses----
+df.weights <- data.frame(long_name = c("How long has it been since you lived in your own place?" ,                                                                            
+                                       "How many months have you been without a home, such as living outside or in a shelter?" ,                                              
+                                       "Where did you sleep last night?",                                                                                                     
+                                       "Where are you going to sleep tonight?",                                                                                               
+                                       "Are you currently experiencing or feel you are at risk of experiencing violence?",                                                    
+                                       "Did you leave your previous or current living situation because you felt unsafe?",                                                    
+                                       "Have you ever experienced violence with someone close to you?",                                                                       
+                                       "Have you experienced violence since becoming homeless?",                                                                              
+                                       "Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?",
+                                       "Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?",       
+                                       "Is the lack of housing making it hard to get to a doctors office or take prescribed medications?",                                   
+                                       "Covered by Health Insurance",                                                                                                         
+                                       "What is the size of your household? (including you)" ,                                                                                
+                                       "Is anyone under 5 years old?" ,                                                                                                       
+                                       "Is anyone 55 years or older?",                                                                                                        
+                                       "Is anyone in the household pregnant?" ,                                                                                               
+                                       "How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)",     
+                                       "How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)"),
+                         short_name = c("month_since_own_home" ,                                                                            
+                                        "months_since_any_home" ,                                              
+                                        "loc_sleep_last_night",                                                                                                     
+                                        "loc_sleep_tonight",                                                                                               
+                                        "now_or_at.risk_violence",                                                    
+                                        "leave_prev.curr_living_bc_felt_unsafe",                                                    
+                                        "exp_violence_close",                                                                       
+                                        "exp_violence_homeless",                                                                              
+                                        "hh_phys.mntl_health_conds",
+                                        "hh_lung.kid.liv.heart.sud",       
+                                        "hard_get_doctor_rx",                                   
+                                        "health_ins",                                                                                                         
+                                        "hh_size" ,                                                                                
+                                        "hh_anyone_5orUnder" ,                                                                                                       
+                                        "hh_anyone_55orOver",                                                                                                        
+                                        "hh_pregnant" ,                                                                                               
+                                        "non.hh_children",     
+                                        "non.hh_adults"), 
+                         weight = NA) %>% as_tibble()
 
-ce2
-
-# error check 2----
-if(!all(unique(ov$question) %in% qg2$question & 
-  qg2$question %in% unique(ov$question))){
-  stop("ERROR 2: language syntax mismatch")
+for(i in 1:nrow(df.weights)){
+  df.weights$weight[i] <- get(df.weights$short_name[i])
 }
 
-
-# error check 3----
-if(!all(unique(ce2$question) %in% qg2$question & 
-        qg2$question %in% unique(ce2$question))){
-  stop("ERROR 3: language syntax mismatch")
-}
-
-# temp/
+ce2 <- left_join(ce2, df.weights, by = c("question" = "long_name"))
 
 
-
-full_join(data.frame(ce2 = T, 
-                     question = unique(ce2$question)),
-          data.frame(qg2 = T, 
-                     question = unique(qg2$question))) %>%
-  full_join(., 
-            data.frame(df.colatts = T, 
-                       question = unique(df.colatts$long_name)), 
-            by = c("question")) %>%
-  as_tibble() %>%
-  .[,c("question", "ce2", "qg2", "df.colatts")] %>%
-  mutate(., 
-         ce2 = ifelse(is.na(ce2), F, ce2),
-         qg2 = ifelse(is.na(qg2), F, qg2),
-         df.colatts = ifelse(is.na(df.colatts), F, df.colatts),
-         t_trues = ce2 + qg2 + df.colatts) #%>%
-  .[.$t_trues < 3,] 
-  #.[order(.$question),] %>%
-  #.[grepl("lack of housing", .$question, ignore.case = T),1]
-
-# temp/
+# 6. calculate composite score----
+ce2$comp_score <- ce2$weight * ce2$pct_v
 
 
-# factorize----
-ce2$`Client ID` <- as.factor(ce2$`Client ID`)
-ce2$Race <- factor(ce2$Race, 
-                      levels = c("White", "Black", "Asian", 
-                                 "Native American", "Multiple Races")) %>% addNA()
-ce2$Ethnicty <- factor(ce2$Ethnicty, 
-                       levels = c("Hispanic", "Non-Hispanic")) %>% addNA()
-ce2$Gender <- factor(ce2$Gender, levels = c("Female", "Male")) %>% addNA()
+# 7. sort by composite score----
+ce3 <- ce2 %>%
+  group_by(`Client ID`,Race) %>%
+  summarise(comp_score = sum(comp_score)) %>%
+  .[order(.$comp_score,decreasing = T),]
 
-ce2$`Entry Date`
-ce2$`Exit Date` 
-
-ce2$Region   <- ce2$Region %>% factor %>% addNA
-ce2$Provider <- ce2$Provider %>% factor %>% addNA
-ce2$`Provider Updating` <- ce2$`Provider Updating` %>% factor %>% addNA
-ce2$short_name          <- ce2$short_name %>% factor %>% addNA
-ce2$group               <- ce2$group %>% factor %>% addNA
-
-ce2$group %>% unique
+ggplot() + 
+  geom_boxplot(data = ce3, 
+               aes(x = Race, y = comp_score, group = Race))
 
 
-ce2 %>%
-  as.data.table() %>%
-  dcast(., 
-        `Client ID` + Race + Gender ~ group + short_name, value.var = "response" )
-# plots-----
-library(ggplot2)
-
+# # Older stuff----
+# 
+# 
+# # DATA IMPORT----
+# 
+# # VI-SPDAT Level of Priority: 
+# #* Highest = 15+17 points 
+# #* Higher = 11-14 points 
+# #* High = 8-10 
+# #* Medium = 4-7  
+# #* Low = 0-3
+#  
+# # Goal Testing Criteria: 
+# # Top 20% Racial Distribution (43% Black) 
+# # Overall Racial Distribution (43% Black)
+# 
+#  
+# #https://ncceh.sharepoint.com/:x:/s/boscoccoordination/EbaXcHJZpX1Dirf1Ql7u_9YB5FTYsxfbI5uEmPHm2Z8zjg?e=e0ORVG
+# 
+# 
+# 
+# # question groups----
+# qg <- read_tsv("	Housing and Homeless History
+# 1	How long has it been since you lived in your own place?
+# 2	How many months have you been without a home, such as living outside or in a shelter?
+# 3	Where did you sleep last night?
+# 4	Where are you going to sleep tonight?
+# 	
+# 	
+# 	Risks
+# 5	Did you leave your previous or current living situation because you felt unsafe?
+# 6	Have you experienced violence since becoming homeless?
+# 7	Have you ever experienced violence with someone close to you?
+# 7.1	Are you currently experiencing or feel you are at risk of experiencing violence?
+# 	
+# 	Health and Wellness
+# 8	Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?
+# 9	Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?
+# 10	Covered by Health Insurance
+# 11	Is the lack of housing making it hard to get to a doctors office or take prescribed medications?
+# 	
+# 	
+# 	Family Unit
+# 12	What is the size of your household? (including you)
+# 13	Is anyone under 5 years old?
+# 14	Is anyone 55 years or older?
+# 15	Is anyone in the household pregnant?
+# 16	How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)
+# 17	How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)", 
+#                col_names = F)
+# 
+# qg2 <- NULL
+# temp.group <- qg$X2[1]
+# for(i in 1:nrow(qg)){
+#   if(is.na(qg$X1[i])){
+#     temp.group <- qg$X2[i]
+#   }else{
+#     qg2 <- rbind(qg2, 
+#                  data.frame(question = qg$X2[i], 
+#                             group    = temp.group, 
+#                             orig.ord = qg$X1[i]))
+#   }
+# }
+# qg2 <- qg2 %>% as_tibble()
+# rm(qg, i, temp.group)
+# 
+# qg2$question
+# 
+# 
+# # Questions and responses and groups----
+# 
+# 
+# # error check 1----
+# if(!all(df.colatts$long_name %in% qg2$question & 
+#   qg2$question %in% df.colatts$long_name)){
+#   stop("ERROR 1: question language does not match between <qg2> and <df.colatts>")
+# }
+# 
+# 
+# 
+# 
+# 
+# 
+# # consolidation----
+# ce2 <- left_join(ce2,ov[,c("question", "response", "pct_v")]) %>%
+#   left_join(., 
+#             df.colatts, 
+#             by = c("question" = "long_name")) %>%
+#   left_join(., 
+#             qg2[,c("question", "group")])
+# 
+# ce2
+# 
+# # error check 2----
+# if(!all(unique(ov$question) %in% qg2$question & 
+#   qg2$question %in% unique(ov$question))){
+#   stop("ERROR 2: language syntax mismatch")
+# }
+# 
+# 
+# # error check 3----
+# if(!all(unique(ce2$question) %in% qg2$question & 
+#         qg2$question %in% unique(ce2$question))){
+#   stop("ERROR 3: language syntax mismatch")
+# }
+# 
+# # temp/
+# 
+# 
+# 
+# full_join(data.frame(ce2 = T, 
+#                      question = unique(ce2$question)),
+#           data.frame(qg2 = T, 
+#                      question = unique(qg2$question))) %>%
+#   full_join(., 
+#             data.frame(df.colatts = T, 
+#                        question = unique(df.colatts$long_name)), 
+#             by = c("question")) %>%
+#   as_tibble() %>%
+#   .[,c("question", "ce2", "qg2", "df.colatts")] %>%
+#   mutate(., 
+#          ce2 = ifelse(is.na(ce2), F, ce2),
+#          qg2 = ifelse(is.na(qg2), F, qg2),
+#          df.colatts = ifelse(is.na(df.colatts), F, df.colatts),
+#          t_trues = ce2 + qg2 + df.colatts) #%>%
+#   .[.$t_trues < 3,] 
+#   #.[order(.$question),] %>%
+#   #.[grepl("lack of housing", .$question, ignore.case = T),1]
+# 
+# # temp/
+# 
+# 
+# # factorize----
+# ce2$`Client ID` <- as.factor(ce2$`Client ID`)
+# ce2$Race <- factor(ce2$Race, 
+#                       levels = c("White", "Black", "Asian", 
+#                                  "Native American", "Multiple Races")) %>% addNA()
+# ce2$Ethnicty <- factor(ce2$Ethnicty, 
+#                        levels = c("Hispanic", "Non-Hispanic")) %>% addNA()
+# ce2$Gender <- factor(ce2$Gender, levels = c("Female", "Male")) %>% addNA()
+# 
+# ce2$`Entry Date`
+# ce2$`Exit Date` 
+# 
+# ce2$Region   <- ce2$Region %>% factor %>% addNA
+# ce2$Provider <- ce2$Provider %>% factor %>% addNA
+# ce2$`Provider Updating` <- ce2$`Provider Updating` %>% factor %>% addNA
+# ce2$short_name          <- ce2$short_name %>% factor %>% addNA
+# ce2$group               <- ce2$group %>% factor %>% addNA
+# 
+# ce2$group %>% unique
+# 
+# 
+# ce2 %>%
+#   as.data.table() %>%
+#   dcast(., 
+#         `Client ID` + Race + Gender ~ group + short_name, value.var = "response" )
+# # plots-----
+# library(ggplot2)
+# 
+# # ggplot() +
+# #   geom_jitter(data = ce11,
+# #               height = 0, width = 0.2,
+# #              aes(x = 0, y = rank_order, color = Race))+
+# #   scale_x_continuous(limits = c(-1,1))
+# 
 # ggplot() +
-#   geom_jitter(data = ce11,
-#               height = 0, width = 0.2,
-#              aes(x = 0, y = rank_order, color = Race))+
-#   scale_x_continuous(limits = c(-1,1))
-
-ggplot() +
-  geom_boxplot(data = ce11,
-             aes(x = Race, y = t_score))
-
-
-ce12 <- ce11[order(ce11$rank_order),]
-
-
-ce12$top_20pct <- c(rep(T,19), rep(F,97-19))
-
-ce12[ce12$top_20pct,] %>%
-  group_by(Race) %>%
-  summarise(n = n()) %>%
-  ungroup() %>%
-  mutate(.,
-         pct_r = n / sum(n))
+#   geom_boxplot(data = ce11,
+#              aes(x = Race, y = t_score))
+# 
+# 
+# ce12 <- ce11[order(ce11$rank_order),]
+# 
+# 
+# ce12$top_20pct <- c(rep(T,19), rep(F,97-19))
+# 
+# ce12[ce12$top_20pct,] %>%
+#   group_by(Race) %>%
+#   summarise(n = n()) %>%
+#   ungroup() %>%
+#   mutate(.,
+#          pct_r = n / sum(n))
