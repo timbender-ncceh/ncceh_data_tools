@@ -501,7 +501,11 @@ as.data.frame(sum.w$coefficients)$Estimate[2:19] %>%
 data.frame(q_num = 1:18, 
            white_weight = as.data.frame(sum.w$coefficients)$Estimate[2:19], 
            black_weight = as.data.frame(sum.b$coefficients)$Estimate[2:19]) %>%
-  ggplot(data = ., 
-         aes(y = q_num, yend = q_num, 
-             x = white_weight, xend = black_weight)) + 
-  geom_segment()
+  ggplot(data = .) + 
+  geom_segment(aes(y = q_num, yend = q_num, 
+                   x = white_weight, xend = black_weight, 
+                   color = white_weight > black_weight)) +
+  scale_x_continuous(name = "weight_value")+
+  scale_y_continuous(name = "question number", minor_breaks = seq(0,1000,by=1)) +
+  geom_point(aes(y = q_num, x = black_weight))+
+  theme(legend.position = "bottom")
