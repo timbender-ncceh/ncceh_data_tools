@@ -351,6 +351,13 @@ ce3 <- ce2 %>%
   summarise(comp_score = sum(comp_score)) %>%
   .[order(.$comp_score,decreasing = T),]
 
+ce3 %>%
+  group_by(Race) %>%
+  summarise(n = n(), 
+            avg_cs = mean(comp_score), 
+            med_cs = median(comp_score), 
+            sd_cs = sd(comp_score))
+
 ggplot() + 
   geom_boxplot(data = ce3, 
                aes(x = Race, y = comp_score, group = Race))
