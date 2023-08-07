@@ -7,7 +7,20 @@ library(forcats)
 
 rm(list=ls());cat('\f')
 gc()
-
+# # VI-SPDAT Level of Priority: 
+# #* Highest = 15+17 points 
+# #* Higher = 11-14 points 
+# #* High = 8-10 
+# #* Medium = 4-7  
+# #* Low = 0-3
+#  
+# # Goal Testing Criteria: 
+# # Top 20% Racial Distribution (43% Black) 
+# # Overall Racial Distribution (43% Black)
+# 
+#  
+# #https://ncceh.sharepoint.com/:x:/s/boscoccoordination/EbaXcHJZpX1Dirf1Ql7u_9YB5FTYsxfbI5uEmPHm2Z8zjg?e=e0ORVG
+# 
 
 # New Steps----
 # 1. vars inputs----
@@ -343,185 +356,3 @@ ggplot() +
                aes(x = Race, y = comp_score, group = Race))
 
 
-# # Older stuff----
-# 
-# 
-# # DATA IMPORT----
-# 
-# # VI-SPDAT Level of Priority: 
-# #* Highest = 15+17 points 
-# #* Higher = 11-14 points 
-# #* High = 8-10 
-# #* Medium = 4-7  
-# #* Low = 0-3
-#  
-# # Goal Testing Criteria: 
-# # Top 20% Racial Distribution (43% Black) 
-# # Overall Racial Distribution (43% Black)
-# 
-#  
-# #https://ncceh.sharepoint.com/:x:/s/boscoccoordination/EbaXcHJZpX1Dirf1Ql7u_9YB5FTYsxfbI5uEmPHm2Z8zjg?e=e0ORVG
-# 
-# 
-# 
-# # question groups----
-# qg <- read_tsv("	Housing and Homeless History
-# 1	How long has it been since you lived in your own place?
-# 2	How many months have you been without a home, such as living outside or in a shelter?
-# 3	Where did you sleep last night?
-# 4	Where are you going to sleep tonight?
-# 	
-# 	
-# 	Risks
-# 5	Did you leave your previous or current living situation because you felt unsafe?
-# 6	Have you experienced violence since becoming homeless?
-# 7	Have you ever experienced violence with someone close to you?
-# 7.1	Are you currently experiencing or feel you are at risk of experiencing violence?
-# 	
-# 	Health and Wellness
-# 8	Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?
-# 9	Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?
-# 10	Covered by Health Insurance
-# 11	Is the lack of housing making it hard to get to a doctors office or take prescribed medications?
-# 	
-# 	
-# 	Family Unit
-# 12	What is the size of your household? (including you)
-# 13	Is anyone under 5 years old?
-# 14	Is anyone 55 years or older?
-# 15	Is anyone in the household pregnant?
-# 16	How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)
-# 17	How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)", 
-#                col_names = F)
-# 
-# qg2 <- NULL
-# temp.group <- qg$X2[1]
-# for(i in 1:nrow(qg)){
-#   if(is.na(qg$X1[i])){
-#     temp.group <- qg$X2[i]
-#   }else{
-#     qg2 <- rbind(qg2, 
-#                  data.frame(question = qg$X2[i], 
-#                             group    = temp.group, 
-#                             orig.ord = qg$X1[i]))
-#   }
-# }
-# qg2 <- qg2 %>% as_tibble()
-# rm(qg, i, temp.group)
-# 
-# qg2$question
-# 
-# 
-# # Questions and responses and groups----
-# 
-# 
-# # error check 1----
-# if(!all(df.colatts$long_name %in% qg2$question & 
-#   qg2$question %in% df.colatts$long_name)){
-#   stop("ERROR 1: question language does not match between <qg2> and <df.colatts>")
-# }
-# 
-# 
-# 
-# 
-# 
-# 
-# # consolidation----
-# ce2 <- left_join(ce2,ov[,c("question", "response", "pct_v")]) %>%
-#   left_join(., 
-#             df.colatts, 
-#             by = c("question" = "long_name")) %>%
-#   left_join(., 
-#             qg2[,c("question", "group")])
-# 
-# ce2
-# 
-# # error check 2----
-# if(!all(unique(ov$question) %in% qg2$question & 
-#   qg2$question %in% unique(ov$question))){
-#   stop("ERROR 2: language syntax mismatch")
-# }
-# 
-# 
-# # error check 3----
-# if(!all(unique(ce2$question) %in% qg2$question & 
-#         qg2$question %in% unique(ce2$question))){
-#   stop("ERROR 3: language syntax mismatch")
-# }
-# 
-# # temp/
-# 
-# 
-# 
-# full_join(data.frame(ce2 = T, 
-#                      question = unique(ce2$question)),
-#           data.frame(qg2 = T, 
-#                      question = unique(qg2$question))) %>%
-#   full_join(., 
-#             data.frame(df.colatts = T, 
-#                        question = unique(df.colatts$long_name)), 
-#             by = c("question")) %>%
-#   as_tibble() %>%
-#   .[,c("question", "ce2", "qg2", "df.colatts")] %>%
-#   mutate(., 
-#          ce2 = ifelse(is.na(ce2), F, ce2),
-#          qg2 = ifelse(is.na(qg2), F, qg2),
-#          df.colatts = ifelse(is.na(df.colatts), F, df.colatts),
-#          t_trues = ce2 + qg2 + df.colatts) #%>%
-#   .[.$t_trues < 3,] 
-#   #.[order(.$question),] %>%
-#   #.[grepl("lack of housing", .$question, ignore.case = T),1]
-# 
-# # temp/
-# 
-# 
-# # factorize----
-# ce2$`Client ID` <- as.factor(ce2$`Client ID`)
-# ce2$Race <- factor(ce2$Race, 
-#                       levels = c("White", "Black", "Asian", 
-#                                  "Native American", "Multiple Races")) %>% addNA()
-# ce2$Ethnicty <- factor(ce2$Ethnicty, 
-#                        levels = c("Hispanic", "Non-Hispanic")) %>% addNA()
-# ce2$Gender <- factor(ce2$Gender, levels = c("Female", "Male")) %>% addNA()
-# 
-# ce2$`Entry Date`
-# ce2$`Exit Date` 
-# 
-# ce2$Region   <- ce2$Region %>% factor %>% addNA
-# ce2$Provider <- ce2$Provider %>% factor %>% addNA
-# ce2$`Provider Updating` <- ce2$`Provider Updating` %>% factor %>% addNA
-# ce2$short_name          <- ce2$short_name %>% factor %>% addNA
-# ce2$group               <- ce2$group %>% factor %>% addNA
-# 
-# ce2$group %>% unique
-# 
-# 
-# ce2 %>%
-#   as.data.table() %>%
-#   dcast(., 
-#         `Client ID` + Race + Gender ~ group + short_name, value.var = "response" )
-# # plots-----
-# library(ggplot2)
-# 
-# # ggplot() +
-# #   geom_jitter(data = ce11,
-# #               height = 0, width = 0.2,
-# #              aes(x = 0, y = rank_order, color = Race))+
-# #   scale_x_continuous(limits = c(-1,1))
-# 
-# ggplot() +
-#   geom_boxplot(data = ce11,
-#              aes(x = Race, y = t_score))
-# 
-# 
-# ce12 <- ce11[order(ce11$rank_order),]
-# 
-# 
-# ce12$top_20pct <- c(rep(T,19), rep(F,97-19))
-# 
-# ce12[ce12$top_20pct,] %>%
-#   group_by(Race) %>%
-#   summarise(n = n()) %>%
-#   ungroup() %>%
-#   mutate(.,
-#          pct_r = n / sum(n))
