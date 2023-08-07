@@ -449,3 +449,59 @@ ggplot() +
 
 ggplot(data = out.scoresB) +
   geom_boxplot(aes(x = Race, y = avg_score, group  =Race))
+
+
+out.scoresA
+
+out.iv_list <- strsplit(x = out.scoresA$score_fingerprint, split = "\\|") 
+
+out.df <- NULL
+for(i in 1:length(out.iv_list)){
+  temp <- out.iv_list[[i]] %>%
+    as.numeric() %>% 
+    as.data.frame() %>% t %>% as.data.frame()
+  out.df <- rbind(out.df, temp)
+  rm(temp)
+}
+rownames(out.df) <- 1:nrow(out.df)
+out.df$Black <- out.scoresA$Black
+out.df$White <- out.scoresA$White
+out.df %>% as_tibble()
+
+lm.black <- lm(formula = Black ~ V1+V2+V3+V4+V5+V6+
+                 V7++V8+V9+V10+V11+V12+
+                 V13+V14+V15+V16+V17+V18, 
+               data = out.df)
+
+lm.white <- lm(formula = White ~ V1+V2+V3+V4+V5+V6+
+                 V7++V8+V9+V10+V11+V12+
+                 V13+V14+V15+V16+V17+V18, 
+               data = out.df)
+
+
+
+
+lm.blackwhite <- lm(formula = Black + White ~ V1+V2+V3+V4+V5+V6+
+                      V7++V8+V9+V10+V11+V12+
+                      V13+V14+V15+V16+V17+V18 , 
+                    data = out.df)
+sum.b <- summary(lm.black)
+sum.w <- summary(lm.white)
+sum.bw <- summary(lm.blackwhite)
+
+
+sum.b$coefficients %>% as.data.frame() %>% .$Estimate %>%
+  .[2:19] %>% 
+  plot(., type = "b")
+
+as.data.frame(sum.w$coefficients)$Estimate[2:19] %>% 
+  plot(., type = "b")
+
+
+data.frame(q_num = 1:18, 
+           white_weight = as.data.frame(sum.w$coefficients)$Estimate[2:19], 
+           black_weight = as.data.frame(sum.b$coefficients)$Estimate[2:19]) %>%
+  ggplot(data = ., 
+         aes(y = q_num, yend = q_num, 
+             x = white_weight, xend = black_weight)) + 
+  geom_segment()
