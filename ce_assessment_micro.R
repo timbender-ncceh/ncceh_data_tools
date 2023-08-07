@@ -5,7 +5,9 @@ library(data.table)
 library(ggplot2)
 library(forcats)
 
-rm(list=ls());cat('\f')
+setwd("C:/Users/TimBender/Documents/R/ncceh/projects/ce_assessment")
+
+rm(list=ls()[!ls() %in% c("ce", "ce2", "ov")]);cat('\f')
 gc()
 # # VI-SPDAT Level of Priority: 
 # #* Highest = 15+17 points 
@@ -25,27 +27,33 @@ gc()
 # New Steps----
 # 1. vars inputs----
 # WEIGHTS
-month_since_own_home                  <- 1                                                                        
-months_since_any_home                 <- 1                        
-loc_sleep_last_night                  <- 1                                                                              
-loc_sleep_tonight                     <- 1                                                                      
-now_or_at.risk_violence               <- 1                               
-leave_prev.curr_living_bc_felt_unsafe <- 1                                                   
-exp_violence_close                    <- 1                                                   
-exp_violence_homeless                 <- 1                                                            
-hh_phys.mntl_health_conds             <- 1
-hh_lung.kid.liv.heart.sud             <- 1
-hard_get_doctor_rx                    <- 1              
-health_ins                            <- 1                                                                            
-hh_size                               <- 1                                                
-hh_anyone_5orUnder                    <- 1                                                                                 
-hh_anyone_55orOver                    <- 1                                                                                    
-hh_pregnant                           <- 1                                                                   
-non.hh_children                       <- 1 
-non.hh_adults                         <- 1
+
+sample_choices <- 1:2
+
+
+month_since_own_home                  <- sample(sample_choices,1)                                                                        
+months_since_any_home                 <- sample(sample_choices,1)                        
+loc_sleep_last_night                  <- sample(sample_choices,1)                                                                              
+loc_sleep_tonight                     <- sample(sample_choices,1)                                                                      
+now_or_at.risk_violence               <- sample(sample_choices,1)                               
+leave_prev.curr_living_bc_felt_unsafe <- sample(sample_choices,1)                                                   
+exp_violence_close                    <- sample(sample_choices,1)                                                   
+exp_violence_homeless                 <- sample(sample_choices,1)                                                            
+hh_phys.mntl_health_conds             <- sample(sample_choices,1)
+hh_lung.kid.liv.heart.sud             <- sample(sample_choices,1)
+hard_get_doctor_rx                    <- sample(sample_choices,1)              
+health_ins                            <- sample(sample_choices,1)                                                                            
+hh_size                               <- sample(sample_choices,1)                                                
+hh_anyone_5orUnder                    <- sample(sample_choices,1)                                                                                 
+hh_anyone_55orOver                    <- sample(sample_choices,1)                                                                                    
+hh_pregnant                           <- sample(sample_choices,1)                                                                   
+non.hh_children                       <- sample(sample_choices,1) 
+non.hh_adults                         <- sample(sample_choices,1)
 
 # 2. read data and tidy----
-ce <- read_tsv("Client ID	Household ID	Race	Ethnicty	Gender	Entry Date	Exit Date	Region	Provider	Provider Updating	How long has it been since you lived in your own place?	How many months have you been without a home, such as living outside or in a shelter?	Where did you sleep last night?	Where are you going to sleep tonight?	Are you currently experiencing or feel you are at risk of experiencing violence?	Did you leave your previous or current living situation because you felt unsafe?	Have you ever experienced violence with someone close to you?	Have you experienced violence since becoming homeless?	Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?	Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?	Is the lack of housing making it hard to get to a doctors office or take prescribed medications?	Covered by Health Insurance	What is the size of your household? (including you)	Is anyone under 5 years old?	Is anyone 55 years or older?	Is anyone in the household pregnant?	How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)	How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)	Note
+# only do this once per startup
+if(!"ce" %in% ls()){
+  ce <- read_tsv("Client ID	Household ID	Race	Ethnicty	Gender	Entry Date	Exit Date	Region	Provider	Provider Updating	How long has it been since you lived in your own place?	How many months have you been without a home, such as living outside or in a shelter?	Where did you sleep last night?	Where are you going to sleep tonight?	Are you currently experiencing or feel you are at risk of experiencing violence?	Did you leave your previous or current living situation because you felt unsafe?	Have you ever experienced violence with someone close to you?	Have you experienced violence since becoming homeless?	Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?	Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?	Is the lack of housing making it hard to get to a doctors office or take prescribed medications?	Covered by Health Insurance	What is the size of your household? (including you)	Is anyone under 5 years old?	Is anyone 55 years or older?	Is anyone in the household pregnant?	How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)	How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)	Note
 136715		White	Non-Hispanic	Male	6/20/2023	7/1/2023	R05	Union County Community Shelter - Union County - Emergency Adult Shelter - ES - State ESG	Union County Community Shelter - Union County - Emergency Adult Shelter - ES - State ESG	Less than 3 months	Less than 3 months	Sheltered (ES, TH)	Sheltered (ES, TH)	No	No	Yes	No	No	No	No	No (HUD)	1-2 people	No	No	No	1 or more	None	
 285031		Black	Non-Hispanic	Male	6/10/2023	7/1/2023	R05	Rowan Helping Ministries - Rowan County -  Emergency Shelter - ES - Private	Rowan Helping Ministries - Rowan County -  Emergency Shelter - ES - Private	36 months (3 years) or more	36 months (3 years) or more	Sheltered (ES, TH)	Sheltered (ES, TH)	Yes	Yes	No	Yes	Yes	Yes, 1	Yes	Yes (HUD)	1-2 people	No	No	No	None	None	
 297854		White	Non-Hispanic	Male	6/23/2023		R05	Rowan Helping Ministries - Rowan County -  Emergency Shelter - ES - Private	Rowan Helping Ministries - Rowan County -  Emergency Shelter - ES - Private	36 months (3 years) or more	36 months (3 years) or more	Sheltered (ES, TH)	Sheltered (ES, TH)	No	No	No	No	No	No	No	No (HUD)	1-2 people	No	No	No	None	None	
@@ -143,38 +151,49 @@ ce <- read_tsv("Client ID	Household ID	Race	Ethnicty	Gender	Entry Date	Exit Date
 1043525					7/1/2023		R05	Union County Community Shelter - Union County - Emergency Adult Shelter - ES - State ESG	Union County Community Shelter - Union County - Emergency Adult Shelter - ES - State ESG	12 to 35 months (1-2 years)	3 to 5 months	Sheltered (ES, TH)	Sheltered (ES, TH)	No	No	No	No	Yes	No	No	Yes (HUD)	3 or more people	No	No	No	1 or more	None	
 1043536					7/3/2023		R05	Rowan Helping Ministries - Rowan County -  Emergency Shelter - ES - Private	Rowan Helping Ministries - Rowan County -  Emergency Shelter - ES - Private	6 to 11 months	6 to 11 months	Sheltered (ES, TH)	Sheltered (ES, TH)	No	Yes	Yes	No	No	Yes, 1	Yes	Yes (HUD)	1-2 people	No	No	No	None	None	
 1043641	141355				7/6/2023		R05	Union County Community Shelter - Union County - Family Shelter - ES - State ESG	Union County Community Shelter - Union County - Family Shelter - ES - State ESG	3 to 5 months	3 to 5 months	Sheltered (ES, TH)	Sheltered (ES, TH)	Yes	No	No	No	Yes	Yes, 1	No	Yes (HUD)	3 or more people	No	No	No	1 or more	None	", 
-               #col_types = paste(c("d", "d", rep("f", 3), "c", "c", rep("f", 21), "c"), sep = "", collapse = ""))
-)
-
-ce$rid <- 1:nrow(ce)
-ce$`Entry Date` <- mdy(ce$`Entry Date`)
-ce$`Exit Date`  <- mdy(ce$`Exit Date`)
-
-# Treat NAs
-for(i in c(11:(ncol(ce)-2))){
-  ce[,i] <- ifelse(is.na(unname(unlist(ce[,i]))), 
-                   "na", 
-                   unname(unlist(ce[,i])))
+                 #col_types = paste(c("d", "d", rep("f", 3), "c", "c", rep("f", 21), "c"), sep = "", collapse = ""))
+  )
+  
+  ce$rid <- 1:nrow(ce)
+  ce$`Entry Date` <- mdy(ce$`Entry Date`)
+  ce$`Exit Date`  <- mdy(ce$`Exit Date`)
+  
+  # Treat NAs
+  for(i in c(11:(ncol(ce)-2))){
+    ce[,i] <- ifelse(is.na(unname(unlist(ce[,i]))), 
+                     "na", 
+                     unname(unlist(ce[,i])))
+  }
 }
 
-ce2 <- ce %>% 
-  as.data.table() %>%
-  melt(., 
-       id.vars = c("Client ID", 
-                   "Household ID", 
-                   "Race", "Ethnicty", "Gender", 
-                   "Entry Date", "Exit Date", 
-                   "Region", "Provider", 
-                   "Provider Updating", 
-                   "rid", "Note"), 
-       value.name = "response", 
-       variable.name = "question") %>%
-  as.data.frame() %>%
-  as_tibble()
+
+# do this only 1 per session
+if(!"ce2" %in% ls()){
+  ce2 <- ce %>% 
+    as.data.table() %>%
+    melt(., 
+         id.vars = c("Client ID", 
+                     "Household ID", 
+                     "Race", "Ethnicty", "Gender", 
+                     "Entry Date", "Exit Date", 
+                     "Region", "Provider", 
+                     "Provider Updating", 
+                     "rid", "Note"), 
+         value.name = "response", 
+         variable.name = "question") %>%
+    as.data.frame() %>%
+    as_tibble()
+}
+
+
 
 # 3. assign number to responses----
 # order vulnerability----
-ov <- read_tsv("How long has it been since you lived in your own place?	order_vuln
+
+
+# do this only once per session
+if(!"ov" %in% ls()){
+  ov <- read_tsv("How long has it been since you lived in your own place?	order_vuln
 12 to 35 months (1-2 years)	3
 3 to 5 months	1
 36 months (3 years) or more	4
@@ -243,57 +262,60 @@ None	0
 How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)	order_vuln
 1 or more	1
 None	0", col_names = F,
-               skip_empty_rows = T)
-
-ov$question <- NA
-temp.q <- NA
-for(i in 1:nrow(ov)){
-  if(ov$X2[i] == "order_vuln"){
-    temp.q <- ov$X1[i]
+                 skip_empty_rows = T)
+  
+  ov$question <- NA
+  temp.q <- NA
+  for(i in 1:nrow(ov)){
+    if(ov$X2[i] == "order_vuln"){
+      temp.q <- ov$X1[i]
+    }
+    ov$question[i] <- temp.q
   }
-  ov$question[i] <- temp.q
+  rm(temp.q,i)
+  
+  ov <- ov[ov$X2 != "order_vuln",]
+  colnames(ov)[1:2] <- c("response", "order_vuln")
+  
+  ov$order_vuln <- as.numeric(ov$order_vuln)
+  ov <- ov[order(ov$question, ov$order_vuln),]
+  
+  ov <- rbind(ov,data.frame(question = unique(ov$question), 
+                            response = NA, 
+                            order_vuln = -1)) %>%
+    .[order(.$question, .$order_vuln),] %>%
+    mutate(., 
+           t_order = 1:length(response), 
+           order_vuln = ifelse(order_vuln == -1, 0, order_vuln))
+  
+  ov$response[is.na(ov$response)] <- "na"
+  
+  # ov %>%
+  #   group_by(response, order_vuln) %>%
+  #   summarise(n_ov = n_distinct(order_vuln))
+  
+  ov$order_vuln <- ov$order_vuln + 1
+  
+  # ov %>%
+  #   group_by(question) %>%
+  #   summarise(n_d = n_distinct(order_vuln), 
+  #             min_v = min(order_vuln), 
+  #             max_v = max(order_vuln)) %>%
+  #   mutate(., 
+  #          check = n_d == (max_v - min_v +1))
+  
+  # 4. normalize responses----
+  ov <- group_by(ov, question) %>%
+    mutate(., 
+           pct_v = order_vuln / max(order_vuln)) %>%
+    ungroup() %>%
+    .[,c("t_order", "question", "response", 
+         "order_vuln", "pct_v")]
+  
+  ce2 <- left_join(ce2, ov)
 }
-rm(temp.q,i)
 
-ov <- ov[ov$X2 != "order_vuln",]
-colnames(ov)[1:2] <- c("response", "order_vuln")
 
-ov$order_vuln <- as.numeric(ov$order_vuln)
-ov <- ov[order(ov$question, ov$order_vuln),]
-
-ov <- rbind(ov,data.frame(question = unique(ov$question), 
-                          response = NA, 
-                          order_vuln = -1)) %>%
-  .[order(.$question, .$order_vuln),] %>%
-  mutate(., 
-         t_order = 1:length(response), 
-         order_vuln = ifelse(order_vuln == -1, 0, order_vuln))
-
-ov$response[is.na(ov$response)] <- "na"
-
-# ov %>%
-#   group_by(response, order_vuln) %>%
-#   summarise(n_ov = n_distinct(order_vuln))
-
-ov$order_vuln <- ov$order_vuln + 1
-
-# ov %>%
-#   group_by(question) %>%
-#   summarise(n_d = n_distinct(order_vuln), 
-#             min_v = min(order_vuln), 
-#             max_v = max(order_vuln)) %>%
-#   mutate(., 
-#          check = n_d == (max_v - min_v +1))
-
-# 4. normalize responses----
-ov <- group_by(ov, question) %>%
-  mutate(., 
-         pct_v = order_vuln / max(order_vuln)) %>%
-  ungroup() %>%
-  .[,c("t_order", "question", "response", 
-       "order_vuln", "pct_v")]
-
-ce2 <- left_join(ce2, ov)
 
 # 5. weigh normalized responses----
 df.weights <- data.frame(long_name = c("How long has it been since you lived in your own place?" ,                                                                            
@@ -351,13 +373,26 @@ ce3 <- ce2 %>%
   summarise(comp_score = sum(comp_score)) %>%
   .[order(.$comp_score,decreasing = T),]
 
-ce3 %>%
-  group_by(Race) %>%
-  summarise(n = n(), 
-            avg_cs = mean(comp_score), 
-            med_cs = median(comp_score), 
-            sd_cs = sd(comp_score))
+score.fingerprint <- unlist(lapply(df.weights$short_name, get)) %>%
+  paste(., sep = "|", collapse = "|")
 
+score.sum.out <- ce3 %>%
+  group_by(Race) %>%
+  summarise(avg_cs = mean(comp_score)#, 
+            #med_cs = median(comp_score), 
+            # sd
+            ) %>%
+  mutate(., 
+         score_fingerprint = score.fingerprint) %>%
+  as.data.table() %>%
+  dcast(., 
+        score_fingerprint ~ Race, 
+        value.var = "avg_cs")
+
+
+readr::write_csv(x = score.sum.out, 
+                 file = "ce_log.csv", 
+                 append = T)
 ggplot() + 
   geom_boxplot(data = ce3, 
                aes(x = Race, y = comp_score, group = Race))
