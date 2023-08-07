@@ -9,6 +9,24 @@ rm(list=ls());cat('\f')
 gc()
 
 
+# New Steps----
+# 1. vars inputs
+
+# 2. read data
+
+# 3. assign number to responses
+
+# 4. normalize responses
+
+# 5. weigh normalized responses
+
+# 6. calculate composite score
+
+# 7. sort by composite score
+
+
+
+# Older stuff----
 # WEIGHTS----
 month_since_own_home                  <- 1                                                                        
 months_since_any_home                 <- 1                        
