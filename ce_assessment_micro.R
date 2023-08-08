@@ -29,35 +29,37 @@ gc()
 # New Steps----
 # 1. vars inputs----
 # WEIGHTS
+n_sims <- 1 #2500
 
 n <- 0
-while(n < 2500){
+while(n < n_sims){
   n <- n + 1
-  rm(list=ls()[!ls() %in% "n"]);cat('\f')#[!ls() %in% c("ce", 
+  rm(list=ls()[!ls() %in% c("n", "n_sims")]);cat('\f')#[!ls() %in% c("ce", 
   #             "ce2", 
   #            "ov")]);cat('\f')
   gc()
   sample_choices <- -3:3
   
+  # as.data.frame(sum.lm.rat_w2b2$coefficients)[2:19,]$Estimate
   
-  month_since_own_home                  <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                                        
-  months_since_any_home                 <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                        
-  loc_sleep_last_night                  <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                                              
-  loc_sleep_tonight                     <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                                      
-  now_or_at.risk_violence               <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                               
-  leave_prev.curr_living_bc_felt_unsafe <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                   
-  exp_violence_close                    <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                   
-  exp_violence_homeless                 <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                            
-  hh_phys.mntl_health_conds             <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)
-  hh_lung.kid.liv.heart.sud             <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)
-  hard_get_doctor_rx                    <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)              
-  health_ins                            <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                                            
-  hh_size                               <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                
-  hh_anyone_5orUnder                    <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                                                 
-  hh_anyone_55orOver                    <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                                                    
-  hh_pregnant                           <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                                   
-  non.hh_children                       <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1) 
-  non.hh_adults                         <- runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)
+  month_since_own_home                  <- -0.9899421#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                                        
+  months_since_any_home                 <- -0.8785537#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                        
+  loc_sleep_last_night                  <- -1.7076351#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                                              
+  loc_sleep_tonight                     <- -1.1801855#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                                      
+  now_or_at.risk_violence               <- -1.0692902#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                               
+  leave_prev.curr_living_bc_felt_unsafe <- -0.9929337#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                   
+  exp_violence_close                    <- -1.6955225#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                   
+  exp_violence_homeless                 <- -1.3794149#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                            
+  hh_phys.mntl_health_conds             <- -0.9330276#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)
+  hh_lung.kid.liv.heart.sud             <- -0.5711712#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)
+  hard_get_doctor_rx                    <- -0.8691389#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)              
+  health_ins                            <- -1.7896179#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                                            
+  hh_size                               <- -0.3508039#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                
+  hh_anyone_5orUnder                    <- -0.4714653#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                                                 
+  hh_anyone_55orOver                    <- -0.9887942#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                                                    
+  hh_pregnant                           <- -0.2541675#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                                   
+  non.hh_children                       <- -0.8760057#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1) 
+  non.hh_adults                         <- -0.6804583#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)
   
   # 2. read data and tidy----
   # only do this once per startup
@@ -408,6 +410,16 @@ None	0", col_names = F,
   
 }
 
+ggplot() + 
+  geom_boxplot(data = ce3, 
+               aes(x = Race, 
+                   y = comp_score, 
+                   group = Race))
+
+
+Sys.sleep(10)
+
+
 # read_log----
 out.scoresA <- read_csv("ce_log.csv") 
 
@@ -504,14 +516,15 @@ as.data.frame(sum.lm.rat_w2b2$coefficients)$Estimate[2:19] %>%
   plot(., type = "b")
 
 ggplot() + 
-  geom_line(data = as.data.frame(sum.lm.rat_w2b$coefficients)[2:19,], 
-            aes(x = (2:nrow(as.data.frame(sum.lm.rat_w2b$coefficients)))-1, 
-                y = Estimate, 
-                color = "All Simulation Weights")) +
-  geom_line(data = as.data.frame(sum.lm.rat_w2b2$coefficients)[2:19,], 
+  geom_col(data = as.data.frame(sum.lm.rat_w2b2$coefficients)[2:19,], 
             aes(x = (2:nrow(as.data.frame(sum.lm.rat_w2b2$coefficients)))-1, 
                 y = Estimate, 
-                color = "Top 10%: Ratio Black to White")) +
+                fill = "Top 10%: Ratio Black to White"), 
+           position = "dodge") +
+  geom_col(data = as.data.frame(sum.lm.rat_w2b$coefficients)[2:19,], 
+            aes(x = (2:nrow(as.data.frame(sum.lm.rat_w2b$coefficients)))-1, 
+                y = Estimate, 
+                fill = "All Simulation Weights")) +
   theme(legend.position = "bottom")
 
 # lm.black <- lm(formula = Black ~ V1+V2+V3+V4+V5+V6+
