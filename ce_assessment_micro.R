@@ -7,9 +7,6 @@ library(forcats)
 library(openssl)
 library(glue)
 
-
-
-
 setwd("C:/Users/TimBender/Documents/R/ncceh/projects/ce_assessment")
 
 rm(list=ls());cat('\f')#[!ls() %in% c("ce", 
@@ -69,6 +66,63 @@ while(n < n_sims){
   hh_pregnant                           <- -0.2541675#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)                                                                   
   non.hh_children                       <- -0.8760057#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1) 
   non.hh_adults                         <- -0.6804583#runif(n = 1, min = -1, max = 1) #sample(sample_choices,1)
+  
+  # 1a. # question groups----
+  qg <- read_tsv("	Housing and Homeless History
+1	How long has it been since you lived in your own place?
+2	How many months have you been without a home, such as living outside or in a shelter?
+3	Where did you sleep last night?
+4	Where are you going to sleep tonight?
+
+
+	Risks
+5	Did you leave your previous or current living situation because you felt unsafe?
+6	Have you experienced violence since becoming homeless?
+7	Have you ever experienced violence with someone close to you?
+7.1	Are you currently experiencing or feel you are at risk of experiencing violence?
+
+	Health and Wellness
+8	Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?
+9	Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?
+10	Covered by Health Insurance
+11	Is the lack of housing making it hard to get to a doctors office or take prescribed medications?
+
+
+	Family Unit
+12	What is the size of your household? (including you)
+13	Is anyone under 5 years old?
+14	Is anyone 55 years or older?
+15	Is anyone in the household pregnant?
+16	How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)
+17	How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)",
+                 col_names = F)
+  
+  qg2 <- NULL
+  temp.group <- qg$X2[1]
+  for(i in 1:nrow(qg)){
+    if(is.na(qg$X1[i])){
+      temp.group <- qg$X2[i]
+    }else{
+      qg2 <- rbind(qg2,
+                   data.frame(question = qg$X2[i],
+                              group    = temp.group,
+                              orig.ord = qg$X1[i]))
+    }
+  }
+  qg2 <- qg2 %>% as_tibble()
+  rm(qg, i, temp.group)
+  
+  qg2$question
+  
+  
+  # Questions and responses and groups----
+  
+  
+  # # error check 1----
+  # if(!all(df.weights$long_name %in% qg2$question &
+  #         qg2$question %in% df.weights$long_name)){
+  #   stop("ERROR 1: question language does not match between <qg2> and <df.colatts>")
+  # }
   
   # 2. read data and tidy----
   # only do this once per startup
@@ -417,7 +471,9 @@ None	0", col_names = F,
   # plot clients----
   ggplot() + 
     geom_boxplot(data = ce3, 
-                 aes(x = Race, y = comp_score, group = Race))
+                 aes(x = Race, y = comp_score, group = Race))+
+    labs(title = "Composite Score by Race", 
+         subtitle = glue("Sim Iteration #: {sim.fingerprint}"))
   
   # plot weights----
   ggplot() + 
@@ -440,7 +496,46 @@ ggplot() +
   geom_boxplot(data = ce3, 
                aes(x = Race, 
                    y = comp_score, 
-                   group = Race))
+                   group = Race))+
+  labs(title = "Composite Score by Race", 
+       subtitle = glue("Sim Iteration #: {sim.fingerprint}"))
+
+ggplot() + 
+  geom_col(data = left_join(df.weights,qg2[,c(1:2)],by=c("long_name"="question")), 
+           aes(x = weight, 
+               y = unlist(lapply(lapply(long_name, 
+                                        strwrap, 70), 
+                                 paste, 
+                                 collapse = "\n"))))+
+  facet_grid(group~., scales = "free_y", space = "free_y")+
+  labs(title = "Score Weights - Optimized to Maximize Difference 
+       in Race (Unadjusted)", 
+       subtitle = glue("Sim Iteration #: {sim.fingerprint}"), 
+       caption = "The higher the number, the higher the vulnerability. In this chart, the negative 
+       numbers have larger bars but they are lower vulnerabilities (I think). So we 
+       need to adjust by adding some common value to all questions")+
+  theme(strip.text.y = element_text(angle = 0))+
+  scale_y_discrete(name = "Survey Question / Group")+
+  scale_x_continuous(name = "Weight Factor")
+
+ggplot() + 
+  geom_col(data = left_join(df.weights,qg2[,c(1:2)],by=c("long_name"="question")), 
+           aes(x = weight - min(weight), 
+               y = unlist(lapply(lapply(long_name, 
+                                        strwrap, 70), 
+                                 paste, 
+                                 collapse = "\n"))))+
+  facet_grid(group~., scales = "free_y", space = "free_y")+
+  labs(title = "Score Weights - Optimized to Maximize Difference 
+       in Race (ADJUSTED)", 
+       subtitle = glue("Sim Iteration #: {sim.fingerprint}"), 
+       caption = "This is the adjusted weights (all values increased by approximately +1.5). This
+       now reflect larger bars meaning larger vulnerabilites, in-line with our 
+       overall analysis*. (* Needs to be peer-reviewed and confirmed that this 
+       theory / approach is correct)")+
+  theme(strip.text.y = element_text(angle = 0))+
+  scale_y_discrete(name = "Survey Question / Group")+
+  scale_x_continuous(name = "Weight Factor")
 
 
 Sys.sleep(10)
@@ -556,62 +651,7 @@ ggplot() +
   labs(subtitle = glue("Sim Iteration #: {sim.fingerprint}"))
 
 
-# question groups----
-qg <- read_tsv("	Housing and Homeless History
-1	How long has it been since you lived in your own place?
-2	How many months have you been without a home, such as living outside or in a shelter?
-3	Where did you sleep last night?
-4	Where are you going to sleep tonight?
 
-
-	Risks
-5	Did you leave your previous or current living situation because you felt unsafe?
-6	Have you experienced violence since becoming homeless?
-7	Have you ever experienced violence with someone close to you?
-7.1	Are you currently experiencing or feel you are at risk of experiencing violence?
-
-	Health and Wellness
-8	Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?
-9	Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?
-10	Covered by Health Insurance
-11	Is the lack of housing making it hard to get to a doctors office or take prescribed medications?
-
-
-	Family Unit
-12	What is the size of your household? (including you)
-13	Is anyone under 5 years old?
-14	Is anyone 55 years or older?
-15	Is anyone in the household pregnant?
-16	How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)
-17	How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)",
-               col_names = F)
-
-qg2 <- NULL
-temp.group <- qg$X2[1]
-for(i in 1:nrow(qg)){
-  if(is.na(qg$X1[i])){
-    temp.group <- qg$X2[i]
-  }else{
-    qg2 <- rbind(qg2,
-                 data.frame(question = qg$X2[i],
-                            group    = temp.group,
-                            orig.ord = qg$X1[i]))
-  }
-}
-qg2 <- qg2 %>% as_tibble()
-rm(qg, i, temp.group)
-
-qg2$question
-
-
-# Questions and responses and groups----
-
-
-# error check 1----
-if(!all(df.weights$long_name %in% qg2$question &
-  qg2$question %in% df.weights$long_name)){
-  stop("ERROR 1: question language does not match between <qg2> and <df.colatts>")
-}
 
 
 
