@@ -34,13 +34,19 @@ gc()
 sim.fingerprint <- openssl::md5(as.character(Sys.time())) %>%
   substr(., nchar(.) - 7, nchar(.))
 
+git.raw.md5 <- read_file("https://raw.githubusercontent.com/timbender-ncceh/ncceh_data_tools/main/ce_assessment_micro.R") %>%
+  md5
+gc()
+
+
 n_sims <- 1 #2500
 
 n <- 0
 while(n < n_sims){
   n <- n + 1
   rm(list=ls()[!ls() %in% c("n", "n_sims", 
-                            "sim.fingerprint")]);cat('\f')#[!ls() %in% c("ce", 
+                            "sim.fingerprint", 
+                            "git.raw.md5")]);cat('\f')#[!ls() %in% c("ce", 
   #             "ce2", 
   #            "ov")]);cat('\f')
   gc()
@@ -503,6 +509,8 @@ ggplot() +
   labs(title = "Composite Score by Race
        Optimized to Maximize Difference in Race", 
        subtitle = glue("Sim Iteration #: {sim.fingerprint}"))
+
+
 
 ggplot() + 
   geom_col(data = left_join(df.weights,qg2[,c(1:2)],by=c("long_name"="question")), 
