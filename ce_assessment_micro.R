@@ -4,6 +4,11 @@ library(lubridate)
 library(data.table)
 library(ggplot2)
 library(forcats)
+library(openssl)
+library(glue)
+
+
+
 
 setwd("C:/Users/TimBender/Documents/R/ncceh/projects/ce_assessment")
 
@@ -29,12 +34,16 @@ gc()
 # New Steps----
 # 1. vars inputs----
 # WEIGHTS
+sim.fingerprint <- openssl::md5(as.character(Sys.time())) %>%
+  substr(., nchar(.) - 7, nchar(.))
+
 n_sims <- 1 #2500
 
 n <- 0
 while(n < n_sims){
   n <- n + 1
-  rm(list=ls()[!ls() %in% c("n", "n_sims")]);cat('\f')#[!ls() %in% c("ce", 
+  rm(list=ls()[!ls() %in% c("n", "n_sims", 
+                            "sim.fingerprint")]);cat('\f')#[!ls() %in% c("ce", 
   #             "ce2", 
   #            "ov")]);cat('\f')
   gc()
@@ -404,6 +413,7 @@ None	0", col_names = F,
   readr::write_csv(x = score.sum.out, 
                    file = "ce_log.csv", 
                    append = T)
+  
   ggplot() + 
     geom_boxplot(data = ce3, 
                  aes(x = Race, y = comp_score, group = Race))
@@ -448,15 +458,15 @@ out.scoresBf <- out.scoresA %>%
   as.data.frame() %>%
   as_tibble()
 
-ggplot() + 
-  geom_line(data = out.scoresB, color = "grey",
-            aes(x = Race, 
-                y = avg_score, 
-                group = score_fingerprint))+
-  geom_line(data = out.scoresBf, color = "red",
-             aes(x = Race, 
-                 y = avg_score, 
-                 group = score_fingerprint))
+# ggplot() + 
+#   geom_line(data = out.scoresB, color = "grey",
+#             aes(x = Race, 
+#                 y = avg_score, 
+#                 group = score_fingerprint))+
+#   geom_line(data = out.scoresBf, color = "red",
+#              aes(x = Race, 
+#                  y = avg_score, 
+#                  group = score_fingerprint))
 
 ggplot() + 
   geom_point(data = out.scoresA, #size = 0.1,
@@ -515,6 +525,7 @@ as.data.frame(sum.lm.rat_w2b$coefficients)$Estimate[2:19] %>%
 as.data.frame(sum.lm.rat_w2b2$coefficients)$Estimate[2:19] %>% 
   plot(., type = "b")
 
+
 ggplot() + 
   geom_col(data = as.data.frame(sum.lm.rat_w2b2$coefficients)[2:19,], 
             aes(x = (2:nrow(as.data.frame(sum.lm.rat_w2b2$coefficients)))-1, 
@@ -525,7 +536,86 @@ ggplot() +
             aes(x = (2:nrow(as.data.frame(sum.lm.rat_w2b$coefficients)))-1, 
                 y = Estimate, 
                 fill = "All Simulation Weights")) +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom") +
+  labs(subtitle = glue("Sim Iteration #: {sim.fingerprint}"))
+
+
+# question groups----
+qg <- read_tsv("	Housing and Homeless History
+1	How long has it been since you lived in your own place?
+2	How many months have you been without a home, such as living outside or in a shelter?
+3	Where did you sleep last night?
+4	Where are you going to sleep tonight?
+
+
+	Risks
+5	Did you leave your previous or current living situation because you felt unsafe?
+6	Have you experienced violence since becoming homeless?
+7	Have you ever experienced violence with someone close to you?
+7.1	Are you currently experiencing or feel you are at risk of experiencing violence?
+
+	Health and Wellness
+8	Does anyone in your household have any physical or mental health conditions that are treated or have been treated by a professional?
+9	Do you or does anyone in the household have lung cancer, kidney or liver failure, heart disease, or a substance use disorder?
+10	Covered by Health Insurance
+11	Is the lack of housing making it hard to get to a doctors office or take prescribed medications?
+
+
+	Family Unit
+12	What is the size of your household? (including you)
+13	Is anyone under 5 years old?
+14	Is anyone 55 years or older?
+15	Is anyone in the household pregnant?
+16	How many children under the age of 18 are not currently staying with your family, but would live with you? (if you have a home)
+17	How many adults 18 or older are not currently staying with your family, but would live with you? (if you have a home)",
+               col_names = F)
+
+qg2 <- NULL
+temp.group <- qg$X2[1]
+for(i in 1:nrow(qg)){
+  if(is.na(qg$X1[i])){
+    temp.group <- qg$X2[i]
+  }else{
+    qg2 <- rbind(qg2,
+                 data.frame(question = qg$X2[i],
+                            group    = temp.group,
+                            orig.ord = qg$X1[i]))
+  }
+}
+qg2 <- qg2 %>% as_tibble()
+rm(qg, i, temp.group)
+
+qg2$question
+
+
+# Questions and responses and groups----
+
+
+# error check 1----
+if(!all(df.weights$long_name %in% qg2$question &
+  qg2$question %in% df.weights$long_name)){
+  stop("ERROR 1: question language does not match between <qg2> and <df.colatts>")
+}
+
+# plot weights----
+
+
+library(glue)
+
+
+ggplot() + 
+  geom_col(data = left_join(df.weights,qg2[,c(1:2)],by=c("long_name"="question")), 
+           aes(x = weight, 
+               y = unlist(lapply(lapply(long_name, 
+                                        strwrap, 70), 
+                                 paste, 
+                                 collapse = "\n"))))+
+  facet_grid(group~., scales = "free_y", space = "free_y")+
+  labs(title = "Score Weights by Question and Group", 
+       subtitle = glue("Sim Iteration #: {sim.fingerprint}"))+
+  theme(strip.text.y = element_text(angle = 0))+
+  scale_y_discrete(name = "Survey Question / Group")+
+  scale_x_continuous(name = "Weight Factor")
 
 # lm.black <- lm(formula = Black ~ V1+V2+V3+V4+V5+V6+
 #                  V7++V8+V9+V10+V11+V12+
