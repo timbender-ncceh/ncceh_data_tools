@@ -492,12 +492,16 @@ None	0", col_names = F,
   
 }
 
+
+library(crayon)
+
 ggplot() + 
   geom_boxplot(data = ce3, 
                aes(x = Race, 
                    y = comp_score, 
                    group = Race))+
-  labs(title = "Composite Score by Race", 
+  labs(title = "Composite Score by Race
+       Optimized to Maximize Difference in Race", 
        subtitle = glue("Sim Iteration #: {sim.fingerprint}"))
 
 ggplot() + 
@@ -538,7 +542,10 @@ ggplot() +
   scale_x_continuous(name = "Weight Factor")
 
 
+cat(bgRed("I'm not confident I have this theory [above] correct on
+          dealing with negative weights\n\n"))
 Sys.sleep(10)
+
 
 
 # read_log----
