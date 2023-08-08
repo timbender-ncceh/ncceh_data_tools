@@ -415,6 +415,7 @@ out.scoresA <- out.scoresA[nchar(out.scoresA$score_fingerprint) > 100,] %>%
   mutate(., 
          rat_w2b = White/Black)
 
+plot(sort(log(out.scoresA$rat_w2b)))
 
 out.scoresB <- out.scoresA %>%
   as.data.table() %>%
@@ -446,14 +447,19 @@ ggplot() +
                  group = score_fingerprint))
 
 ggplot() + 
-  geom_point(data = out.scoresA, 
-             aes(x = White, y = Black))
+  geom_point(data = out.scoresA, #size = 0.1,
+             aes(x = White, y = Black, color = rat_w2b))+
+  scale_color_viridis_c(option = "C")+
+  scale_x_continuous(limits = c(-6,6))+
+  scale_y_continuous(limits = c(-6,6))+
+  geom_segment(linewidth = 1, 
+               aes(x = -6, xend = 6, 
+                   y = -6, yend = 6))
 
-ggplot(data = out.scoresB) +
-  geom_boxplot(aes(x = Race, y = avg_score, group  =Race))
+ggplot(data = out.scoresBf[out.scoresBf$Race != "rat_w2b",]) +
+  geom_violin(aes(x = Race, y = avg_score, group  =Race), 
+              draw_quantiles = c(0.25, 0.5, 0.75))
 
-
-out.scoresA
 
 out.iv_list <- strsplit(x = out.scoresA$score_fingerprint, split = "\\|") 
 
@@ -468,47 +474,85 @@ for(i in 1:length(out.iv_list)){
 rownames(out.df) <- 1:nrow(out.df)
 out.df$Black <- out.scoresA$Black
 out.df$White <- out.scoresA$White
-out.df %>% as_tibble()
+out.df$w2b   <- out.scoresA$rat_w2b
 
-lm.black <- lm(formula = Black ~ V1+V2+V3+V4+V5+V6+
+fivenum(out.df$w2b)
+
+out.df2 <- out.df %>% as_tibble() %>%
+  slice_min(., 
+            order_by = w2b, 
+            prop = 0.1)
+
+lm.rat_w2b <- lm(formula = w2b ~ V1+V2+V3+V4+V5+V6+
                  V7++V8+V9+V10+V11+V12+
                  V13+V14+V15+V16+V17+V18, 
                data = out.df)
+sum.lm.rat_w2b <- summary(lm.rat_w2b)
 
-lm.white <- lm(formula = White ~ V1+V2+V3+V4+V5+V6+
-                 V7++V8+V9+V10+V11+V12+
-                 V13+V14+V15+V16+V17+V18, 
-               data = out.df)
-
-
-
-
-lm.blackwhite <- lm(formula = Black + White ~ V1+V2+V3+V4+V5+V6+
-                      V7++V8+V9+V10+V11+V12+
-                      V13+V14+V15+V16+V17+V18 , 
-                    data = out.df)
-sum.b <- summary(lm.black)
-sum.w <- summary(lm.white)
-sum.bw <- summary(lm.blackwhite)
+lm.rat_w2b2 <- lm(formula = w2b ~ V1+V2+V3+V4+V5+V6+
+                   V7++V8+V9+V10+V11+V12+
+                   V13+V14+V15+V16+V17+V18, 
+                 data = out.df2)
+sum.lm.rat_w2b2 <- summary(lm.rat_w2b2)
 
 
-sum.b$coefficients %>% as.data.frame() %>% .$Estimate %>%
-  .[2:19] %>% 
+
+as.data.frame(sum.lm.rat_w2b$coefficients)$Estimate[2:19] %>% 
+     plot(., type = "b")
+
+as.data.frame(sum.lm.rat_w2b2$coefficients)$Estimate[2:19] %>% 
   plot(., type = "b")
 
-as.data.frame(sum.w$coefficients)$Estimate[2:19] %>% 
-  plot(., type = "b")
-
-
-data.frame(q_num = 1:18, 
-           white_weight = as.data.frame(sum.w$coefficients)$Estimate[2:19], 
-           black_weight = as.data.frame(sum.b$coefficients)$Estimate[2:19], 
-           bw_weight = as.data.frame(sum.bw$coefficients)$Estimate[2:19]) %>%
-  ggplot(data = .) + 
-  geom_segment(aes(y = q_num, yend = q_num, 
-                   x = white_weight, xend = black_weight, 
-                   color = white_weight > black_weight)) +
-  scale_x_continuous(name = "weight_value")+
-  scale_y_continuous(name = "question number", minor_breaks = seq(0,1000,by=1)) +
-  geom_point(aes(y = q_num, x = bw_weight))+
+ggplot() + 
+  geom_line(data = as.data.frame(sum.lm.rat_w2b$coefficients)[2:19,], 
+            aes(x = (2:nrow(as.data.frame(sum.lm.rat_w2b$coefficients)))-1, 
+                y = Estimate, 
+                color = "All Simulation Weights")) +
+  geom_line(data = as.data.frame(sum.lm.rat_w2b2$coefficients)[2:19,], 
+            aes(x = (2:nrow(as.data.frame(sum.lm.rat_w2b2$coefficients)))-1, 
+                y = Estimate, 
+                color = "Top 10%: Ratio Black to White")) +
   theme(legend.position = "bottom")
+
+# lm.black <- lm(formula = Black ~ V1+V2+V3+V4+V5+V6+
+#                  V7++V8+V9+V10+V11+V12+
+#                  V13+V14+V15+V16+V17+V18, 
+#                data = out.df)
+# 
+# lm.white <- lm(formula = White ~ V1+V2+V3+V4+V5+V6+
+#                  V7++V8+V9+V10+V11+V12+
+#                  V13+V14+V15+V16+V17+V18, 
+#                data = out.df)
+# 
+# 
+# 
+# 
+# lm.blackwhite <- lm(formula = Black + White ~ V1+V2+V3+V4+V5+V6+
+#                       V7++V8+V9+V10+V11+V12+
+#                       V13+V14+V15+V16+V17+V18 , 
+#                     data = out.df)
+# sum.b <- summary(lm.black)
+# sum.w <- summary(lm.white)
+# sum.bw <- summary(lm.blackwhite)
+# 
+# 
+# sum.b$coefficients %>% as.data.frame() %>% .$Estimate %>%
+#   .[2:19] %>% 
+#   plot(., type = "b")
+# 
+# as.data.frame(sum.w$coefficients)$Estimate[2:19] %>% 
+#   plot(., type = "b")
+# 
+# 
+# data.frame(q_num = 1:18, 
+#            white_weight = as.data.frame(sum.w$coefficients)$Estimate[2:19], 
+#            black_weight = as.data.frame(sum.b$coefficients)$Estimate[2:19], 
+#            bw_weight = as.data.frame(sum.bw$coefficients)$Estimate[2:19]) %>%
+#   ggplot(data = .) + 
+#   geom_segment(aes(y = q_num, yend = q_num, 
+#                    x = white_weight, xend = black_weight, 
+#                    color = white_weight > black_weight)) +
+#   scale_x_continuous(name = "weight_value")+
+#   scale_y_continuous(name = "question number", minor_breaks = seq(0,1000,by=1)) +
+#   geom_point(aes(y = q_num, x = bw_weight))+
+#   theme(legend.position = "bottom")
