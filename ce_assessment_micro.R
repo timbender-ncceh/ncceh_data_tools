@@ -31,7 +31,7 @@ gc()
 # WEIGHTS
 
 n <- 0
-while(n < 250){
+while(n < 2500){
   n <- n + 1
   rm(list=ls()[!ls() %in% "n"]);cat('\f')#[!ls() %in% c("ce", 
   #             "ce2", 
@@ -408,10 +408,12 @@ None	0", col_names = F,
   
 }
 
-
+# read_log----
 out.scoresA <- read_csv("ce_log.csv") 
 
-out.scoresA <- out.scoresA[nchar(out.scoresA$score_fingerprint) > 100,]
+out.scoresA <- out.scoresA[nchar(out.scoresA$score_fingerprint) > 100,] %>%
+  mutate(., 
+         rat_w2b = White/Black)
 
 
 out.scoresB <- out.scoresA %>%
@@ -500,12 +502,13 @@ as.data.frame(sum.w$coefficients)$Estimate[2:19] %>%
 
 data.frame(q_num = 1:18, 
            white_weight = as.data.frame(sum.w$coefficients)$Estimate[2:19], 
-           black_weight = as.data.frame(sum.b$coefficients)$Estimate[2:19]) %>%
+           black_weight = as.data.frame(sum.b$coefficients)$Estimate[2:19], 
+           bw_weight = as.data.frame(sum.bw$coefficients)$Estimate[2:19]) %>%
   ggplot(data = .) + 
   geom_segment(aes(y = q_num, yend = q_num, 
                    x = white_weight, xend = black_weight, 
                    color = white_weight > black_weight)) +
   scale_x_continuous(name = "weight_value")+
   scale_y_continuous(name = "question number", minor_breaks = seq(0,1000,by=1)) +
-  geom_point(aes(y = q_num, x = black_weight))+
+  geom_point(aes(y = q_num, x = bw_weight))+
   theme(legend.position = "bottom")
