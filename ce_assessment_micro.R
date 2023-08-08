@@ -414,9 +414,25 @@ None	0", col_names = F,
                    file = "ce_log.csv", 
                    append = T)
   
+  # plot clients----
   ggplot() + 
     geom_boxplot(data = ce3, 
                  aes(x = Race, y = comp_score, group = Race))
+  
+  # plot weights----
+  ggplot() + 
+    geom_col(data = left_join(df.weights,qg2[,c(1:2)],by=c("long_name"="question")), 
+             aes(x = weight, 
+                 y = unlist(lapply(lapply(long_name, 
+                                          strwrap, 70), 
+                                   paste, 
+                                   collapse = "\n"))))+
+    facet_grid(group~., scales = "free_y", space = "free_y")+
+    labs(title = "Score Weights by Question and Group", 
+         subtitle = glue("Sim Iteration #: {sim.fingerprint}"))+
+    theme(strip.text.y = element_text(angle = 0))+
+    scale_y_discrete(name = "Survey Question / Group")+
+    scale_x_continuous(name = "Weight Factor")
   
 }
 
@@ -597,25 +613,7 @@ if(!all(df.weights$long_name %in% qg2$question &
   stop("ERROR 1: question language does not match between <qg2> and <df.colatts>")
 }
 
-# plot weights----
 
-
-library(glue)
-
-
-ggplot() + 
-  geom_col(data = left_join(df.weights,qg2[,c(1:2)],by=c("long_name"="question")), 
-           aes(x = weight, 
-               y = unlist(lapply(lapply(long_name, 
-                                        strwrap, 70), 
-                                 paste, 
-                                 collapse = "\n"))))+
-  facet_grid(group~., scales = "free_y", space = "free_y")+
-  labs(title = "Score Weights by Question and Group", 
-       subtitle = glue("Sim Iteration #: {sim.fingerprint}"))+
-  theme(strip.text.y = element_text(angle = 0))+
-  scale_y_discrete(name = "Survey Question / Group")+
-  scale_x_continuous(name = "Weight Factor")
 
 # lm.black <- lm(formula = Black ~ V1+V2+V3+V4+V5+V6+
 #                  V7++V8+V9+V10+V11+V12+
