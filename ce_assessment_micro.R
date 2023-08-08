@@ -609,7 +609,8 @@ ggplot(data = out.scoresBf[out.scoresBf$Race != "rat_w2b",]) +
               draw_quantiles = c(0.25, 0.5, 0.75))
 
 
-out.iv_list <- strsplit(x = out.scoresA$score_fingerprint, split = "\\|") 
+out.iv_list <- strsplit(x = out.scoresA$score_fingerprint, 
+                        split = "\\|") 
 
 out.df <- NULL
 for(i in 1:length(out.iv_list)){
@@ -619,6 +620,7 @@ for(i in 1:length(out.iv_list)){
   out.df <- rbind(out.df, temp)
   rm(temp)
 }
+
 rownames(out.df) <- 1:nrow(out.df)
 out.df$Black <- out.scoresA$Black
 out.df$White <- out.scoresA$White
@@ -629,7 +631,33 @@ fivenum(out.df$w2b)
 out.df2 <- out.df %>% as_tibble() %>%
   slice_min(., 
             order_by = w2b, 
-            prop = 0.1)
+            n = 100)
+
+out.df3 <- out.df2[order(out.df2$w2b,decreasing = T),] %>%
+  mutate(., rid = 1:length(White)) %>%
+  as.data.table() %>%
+  melt(., id.vars = c("Black", "White", "w2b", "rid")) %>%
+  as.data.frame() 
+  
+out.df3 %>%
+  group_by(rid) %>%
+  summarise(n_val_positive = sum(value > 0), 
+            sum_val = sum(value),
+            avg_val = mean(value), 
+            med_val = median(value), 
+            sd_val  = sd(value)) %>%
+  .[order(.$n_val_positive,decreasing = F),]
+
+ggplot(data = out.df3, 
+         aes(x = n_val_positive, y = sum_val)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+ggplot(data = out.df3[out.df3$rid %in% c(1,3),], 
+         aes(group = rid, 
+             x = variable, y = value, color = factor(rid))) + 
+  geom_line()+
+  geom_point()
 
 lm.rat_w2b <- lm(formula = w2b ~ V1+V2+V3+V4+V5+V6+
                  V7++V8+V9+V10+V11+V12+
